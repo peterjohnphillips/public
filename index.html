@@ -15,9 +15,11 @@ html,body{height:100%;background:#0e0e14;color:#e8e8f0;font-family:-apple-system
 .dl-btn{background:#2563EB;color:#fff;border:none;padding:7px 15px;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:600;white-space:nowrap;text-decoration:none}
 .dl-btn:hover{background:#1d4ed8}
 
-/* ── Day tabs ── */
-#dayTabs{display:flex;gap:4px;padding:12px 20px 0;flex-shrink:0;border-bottom:1px solid #1a1a24}
-.day-tab{padding:8px 18px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.82rem;font-weight:600;color:#666;background:#16161f;border:1px solid #272738;border-bottom:none;transition:color .12s,background .12s;line-height:1}
+/* ── Day tabs row ── */
+#navRow{display:flex;align-items:flex-end;border-bottom:1px solid #1a1a24;flex-shrink:0}
+#dayTabs{display:flex;gap:4px;padding:10px 16px 0;flex:1;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+#dayTabs::-webkit-scrollbar{display:none}
+.day-tab{padding:8px 16px;border-radius:8px 8px 0 0;cursor:pointer;font-size:.82rem;font-weight:600;color:#666;background:#16161f;border:1px solid #272738;border-bottom:none;transition:color .12s,background .12s;line-height:1;white-space:nowrap;flex-shrink:0}
 .day-tab.active{color:#e8e8f0;background:#1e1e2c;border-color:#3a3a5a}
 .day-tab:hover:not(.active){color:#bbb;background:#1a1a26}
 
@@ -27,23 +29,58 @@ html,body{height:100%;background:#0e0e14;color:#e8e8f0;font-family:-apple-system
 .ttoggle{padding:4px 10px;border-radius:20px;cursor:pointer;font-size:.72rem;font-weight:600;border:1.5px solid transparent;transition:opacity .12s;white-space:nowrap;user-select:none;line-height:1.4}
 .ttoggle.off{opacity:.28}
 
+/* ── Collapsed state — hide header + day tabs + filters ── */
+body.ui-hidden #hdr{display:none}
+body.ui-hidden #navRow{display:none}
+body.ui-hidden #filterBar{display:none}
+
 /* ── Chart layout ── */
 #chartArea{display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0}
-#chartScroll{flex:1;overflow:auto;position:relative}
-#chartInner{display:flex;width:max-content;min-width:100%}
+#chartScroll{flex:1;overflow:auto}
+/* 2-column grid: frozen venue col | scrolling gantt col */
+#chartGrid{display:grid;grid-template-columns:140px auto;width:max-content;min-width:100%}
 
-/* Frozen left column */
-#venueCol{
-  width:140px;flex-shrink:0;
-  position:sticky;left:0;z-index:10;
+/* Corner cell: sticky top-left, holds VENUE label + toggle button */
+#cornerCell{
+  grid-column:1;grid-row:1;
+  position:sticky;left:0;top:0;z-index:20;
+  width:140px;height:40px;
+  background:#0d0d14;
+  border-right:1px solid #252535;
+  border-bottom:1px solid #2a2a40;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 6px 0 10px;gap:4px;
+}
+.vh-lbl{font-size:.6rem;color:#444;text-transform:uppercase;letter-spacing:.08em;white-space:nowrap}
+#collapseBtn{
+  background:#1a1a2c;border:1px solid #2e2e4e;color:#888;
+  border-radius:6px;padding:3px 7px;cursor:pointer;
+  font-size:.68rem;font-weight:600;line-height:1.4;
+  transition:color .12s,background .12s;white-space:nowrap;flex-shrink:0;
+}
+#collapseBtn:hover{color:#ccc;background:#252538}
+body.ui-hidden #collapseBtn{color:#3a9eff;border-color:#2a4a7a}
+
+/* Time header: sticky top, scrolls horizontally with the gantt */
+#timeHeader{
+  grid-column:2;grid-row:1;
+  position:sticky;top:0;z-index:15;
   background:#111118;
+  border-bottom:1px solid #2a2a40;
+  line-height:0;
+}
+
+/* Venue col: sticky left, scrolls vertically with bars */
+#venueCol{
+  grid-column:1;grid-row:2;
+  position:sticky;left:0;z-index:10;
+  width:140px;background:#111118;
   border-right:1px solid #252535;
 }
-.vh{height:40px;background:#0d0d14;display:flex;align-items:center;padding:0 10px;font-size:.65rem;color:#444;text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid #1e1e2e}
 .vc{height:60px;display:flex;align-items:center;padding:0 10px;font-size:.74rem;color:#bbb;font-weight:500;border-bottom:1px solid #191926}
 
-/* Gantt SVG col */
-#ganttCol{flex:1;min-width:0}
+/* Gantt bars col */
+#ganttCol{grid-column:2;grid-row:2;line-height:0}
 
 /* ── Modal overlay ── */
 #modal-overlay{
@@ -105,13 +142,18 @@ html,body{height:100%;background:#0e0e14;color:#e8e8f0;font-family:-apple-system
   <a class="dl-btn" href="#" onclick="dlSelf(event)">&#8595; Save Offline HTML</a>
 </div>
 
-<div id="dayTabs"></div>
+<div id="navRow"><div id="dayTabs"></div></div>
 <div id="filterBar"></div>
 
 <div id="chartArea">
   <div id="chartScroll">
-    <div id="chartInner">
-      <div id="venueCol"><div class="vh">Venue</div></div>
+    <div id="chartGrid">
+      <div id="cornerCell">
+        <span class="vh-lbl">Venue</span>
+        <button id="collapseBtn" onclick="toggleUI()">⌃ Hide</button>
+      </div>
+      <div id="timeHeader"></div>
+      <div id="venueCol"></div>
       <div id="ganttCol"></div>
     </div>
   </div>
@@ -213,13 +255,14 @@ function render(){
 
   const totalH=(ve-vs)/3600000;
   const svgW=Math.max(600, Math.ceil(totalH*PPH));
-  const svgH=TH_H+venues.length*ROW_H;
+  const barsH=venues.length*ROW_H;
 
-  // Venue sidebar
-  const vc=document.getElementById('venueCol');
-  vc.innerHTML='<div class="vh">Venue</div>'+venues.map(v=>`<div class="vc">${esc(v)}</div>`).join('');
+  // Venue column (row 2, col 1)
+  document.getElementById('venueCol').innerHTML=
+    venues.map(v=>`<div class="vc">${esc(v)}</div>`).join('');
 
   if(!dayEvts.length){
+    document.getElementById('timeHeader').innerHTML='';
     document.getElementById('ganttCol').innerHTML='<div class="no-ev">No events match the current filters.</div>';
     return;
   }
@@ -227,34 +270,35 @@ function render(){
   const vmap=Object.fromEntries(venues.map((v,i)=>[v,i]));
   const hourStep=totalH>22?2:1;
 
-  let bgs='',lines='',xlbls='',bars='',defs='';
+  let bgs='',vlines='',xlbls='',bars='',defs='';
 
-  // Row backgrounds
+  // Row backgrounds (in bars SVG, y starts at 0)
   venues.forEach((v,ri)=>{
-    const y=TH_H+ri*ROW_H;
+    const y=ri*ROW_H;
     bgs+=`<rect x="0" y="${y}" width="${svgW}" height="${ROW_H}" fill="${ri%2?'#191924':'#1e1e2c'}"/>`;
     if(ri>0) bgs+=`<line x1="0" y1="${y}" x2="${svgW}" y2="${y}" stroke="#1c1c2a" stroke-width="1"/>`;
   });
 
-  // Time grid
+  // Time grid — vertical lines span bars area; labels go in separate time header SVG
   for(let h=0;h<=totalH;h+=hourStep){
     const x=Math.round(h*PPH);
     const t=new Date(vs+h*3600000);
     const hh=t.getHours(), mn=t.getMinutes();
     const lbl=mn?`${hh}:${String(mn).padStart(2,'0')}`:
       (hh===0?'12am':hh<12?`${hh}am`:hh===12?'12pm':`${hh-12}pm`);
-    lines+=`<line x1="${x}" y1="${TH_H}" x2="${x}" y2="${svgH}" stroke="#252535" stroke-width="1"/>`;
-    xlbls+=`<text x="${x+4}" y="26" fill="#505070" font-size="12" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">${lbl}</text>`;
+    vlines+=`<line x1="${x}" y1="0" x2="${x}" y2="${barsH}" stroke="#252535" stroke-width="1"/>`;
+    xlbls+=`<text x="${x+4}" y="26" fill="#505070" font-size="12"
+      font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">${lbl}</text>`;
   }
 
-  // Event bars — click only, no hover
+  // Event bars — click only
   dayEvts.forEach(e=>{
     const ri=vmap[e.venue];
     if(ri===undefined)return;
     const x0=(Math.max(e.sm,vs)-vs)/3600000*PPH;
     const x1=(Math.min(e.em,ve)-vs)/3600000*PPH;
     const bw=Math.max(4,x1-x0-2);
-    const by=TH_H+ri*ROW_H+5;
+    const by=ri*ROW_H+5;
     const bh=ROW_H-10;
     const iid=`b${e.item_id||Math.random().toString(36).slice(2)}`;
     const title=esc(e.title||'');
@@ -271,22 +315,25 @@ function render(){
 
     if(bw>24){
       bars+=`<text clip-path="url(#c${iid})" x="${x0+6}" y="${by+bh/2+5}"
-        fill="rgba(255,255,255,.95)" font-size="12"
-        font-weight="500"
+        fill="rgba(255,255,255,.95)" font-size="12" font-weight="500"
         font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
         pointer-events="none">${title}</text>`;
     }
   });
 
-  document.getElementById('ganttCol').innerHTML=`
-<svg width="${svgW}" height="${svgH}" style="display:block">
-  <defs>${defs}</defs>
-  <rect width="${svgW}" height="${svgH}" fill="#1e1e2c"/>
-  ${bgs}${lines}
+  // Time header SVG (row 1, col 2) — sticky top
+  document.getElementById('timeHeader').innerHTML=`
+<svg width="${svgW}" height="${TH_H}" style="display:block">
   <rect width="${svgW}" height="${TH_H}" fill="#111118"/>
-  <line x1="0" y1="${TH_H}" x2="${svgW}" y2="${TH_H}" stroke="#2a2a40" stroke-width="1"/>
   ${xlbls}
-  ${bars}
+</svg>`;
+
+  // Bars SVG (row 2, col 2)
+  document.getElementById('ganttCol').innerHTML=`
+<svg width="${svgW}" height="${barsH}" style="display:block">
+  <defs>${defs}</defs>
+  <rect width="${svgW}" height="${barsH}" fill="#1e1e2c"/>
+  ${bgs}${vlines}${bars}
 </svg>`;
 
   // Scroll to first event
@@ -342,6 +389,11 @@ function dlSelf(ev){
   a.href=URL.createObjectURL(blob);
   a.download='htlgi-2026-schedule.html';
   a.click();
+}
+
+function toggleUI(){
+  const hidden = document.body.classList.toggle('ui-hidden');
+  document.getElementById('collapseBtn').textContent = hidden ? '⌄ Show' : '⌃ Hide';
 }
 
 renderTabs(); renderFilters(); render();
