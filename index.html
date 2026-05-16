@@ -12,8 +12,8 @@ html,body{height:100%;background:#0e0e14;color:#e8e8f0;font-family:-apple-system
 #hdr{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding:14px 20px 10px;border-bottom:1px solid #1e1e2e;flex-shrink:0}
 #hdr h1{font-size:1.3rem;font-weight:700;color:#fff;letter-spacing:.04em}
 #hdr .sub{font-size:.72rem;color:#666;margin-top:2px}
-.dl-btn{background:#2563EB;color:#fff;border:none;padding:7px 15px;border-radius:6px;cursor:pointer;font-size:.78rem;font-weight:600;white-space:nowrap;text-decoration:none}
-.dl-btn:hover{background:#1d4ed8}
+.hide-btn{background:#1e1e2c;border:1px solid #2e2e4e;color:#888;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.8rem;font-weight:600;white-space:nowrap;transition:color .12s,background .12s}
+.hide-btn:hover{color:#ccc;background:#252538}
 
 /* ── Day tabs row ── */
 #navRow{display:flex;align-items:flex-end;border-bottom:1px solid #1a1a24;flex-shrink:0}
@@ -143,7 +143,7 @@ body.ui-hidden #collapseBtn{color:#3a9eff;border-color:#2a4a7a}
 
 <div id="hdr">
   <div><h1>HowTheLightGetsIn 2026</h1><div class="sub">Hay-on-Wye · 22–25 May 2026 · Gantt Schedule</div></div>
-  <a class="dl-btn" href="#" onclick="dlSelf(event)">&#8595; Save Offline HTML</a>
+  <button class="hide-btn" onclick="toggleUI()">⌃ Hide</button>
 </div>
 
 <div id="navRow"><div id="dayTabs"></div></div>
@@ -389,15 +389,6 @@ function closeModalDirect(){
   document.getElementById('modal-overlay').classList.remove('vis');
 }
 document.addEventListener('keydown',ev=>{if(ev.key==='Escape') closeModalDirect();});
-
-function dlSelf(ev){
-  ev.preventDefault();
-  const blob=new Blob(['<!DOCTYPE html>\n'+document.documentElement.outerHTML],{type:'text/html'});
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(blob);
-  a.download='htlgi-2026-schedule.html';
-  a.click();
-}
 
 function toggleUI(){
   const hidden = document.body.classList.toggle('ui-hidden');
