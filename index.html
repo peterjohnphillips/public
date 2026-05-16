@@ -114,15 +114,19 @@ body.ui-hidden #collapseBtn{color:#3a9eff;border-color:#2a4a7a}
 }
 .m-close button:hover{background:#2a2a50;color:#fff}
 .m-body{padding:0 18px 22px}
-.m-thumb{width:100%;max-height:200px;object-fit:cover;border-radius:10px;margin-bottom:14px;display:block}
-.m-badge{display:inline-block;padding:3px 10px;border-radius:14px;font-size:.7rem;font-weight:700;color:#fff;margin-bottom:10px}
-.m-title{font-size:1.15rem;font-weight:700;color:#fff;margin-bottom:6px;line-height:1.3}
-.m-meta{font-size:.8rem;color:#777;margin-bottom:5px;line-height:1.5}
-.m-spk{font-size:.82rem;color:#aaa;font-style:italic;margin-bottom:10px;line-height:1.4}
-.m-desc{font-size:.8rem;color:#999;line-height:1.6;margin-bottom:12px}
-.m-fp{font-size:.74rem;color:#f1c40f;margin-bottom:10px}
-.m-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
-.m-lnk{font-size:.8rem;padding:9px 18px;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;flex:1;min-width:120px}
+/* side-by-side: text left, image right */
+.m-layout{display:flex;gap:12px;align-items:flex-start}
+.m-text{flex:1;min-width:0}
+.m-image{flex-shrink:0;width:110px}
+.m-image img{width:100%;border-radius:8px;display:block;object-fit:cover}
+.m-badge{display:inline-block;padding:3px 10px;border-radius:14px;font-size:.7rem;font-weight:700;color:#fff;margin-bottom:8px}
+.m-title{font-size:1.05rem;font-weight:700;color:#fff;margin-bottom:5px;line-height:1.3}
+.m-meta{font-size:.78rem;color:#777;margin-bottom:4px;line-height:1.5}
+.m-spk{font-size:.78rem;color:#aaa;font-style:italic;margin-bottom:8px;line-height:1.4}
+.m-desc{font-size:.78rem;color:#999;line-height:1.6;margin-bottom:10px}
+.m-fp{font-size:.72rem;color:#f1c40f;margin-bottom:8px}
+.m-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.m-lnk{font-size:.8rem;padding:9px 18px;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;flex:1;min-width:110px}
 .m-lnk.ev{background:#1e2a50;color:#7a9fff;border:1px solid #2a3a70}
 .m-lnk.tk{background:#1a3a1a;color:#7aee9f;border:1px solid #2a5a2a}
 .m-lnk:hover{filter:brightness(1.2)}
@@ -270,16 +274,16 @@ function render(){
   const vmap=Object.fromEntries(venues.map((v,i)=>[v,i]));
   const hourStep=totalH>22?2:1;
 
-  let bgs='',vlines='',xlbls='',bars='',defs='';
+  let bgs='',vlines='',xlbls='',bars='';
 
-  // Row backgrounds (in bars SVG, y starts at 0)
+  // Row backgrounds (y=0 based, no time-header offset)
   venues.forEach((v,ri)=>{
     const y=ri*ROW_H;
     bgs+=`<rect x="0" y="${y}" width="${svgW}" height="${ROW_H}" fill="${ri%2?'#191924':'#1e1e2c'}"/>`;
     if(ri>0) bgs+=`<line x1="0" y1="${y}" x2="${svgW}" y2="${y}" stroke="#1c1c2a" stroke-width="1"/>`;
   });
 
-  // Time grid — vertical lines span bars area; labels go in separate time header SVG
+  // Vertical time grid + header labels
   for(let h=0;h<=totalH;h+=hourStep){
     const x=Math.round(h*PPH);
     const t=new Date(vs+h*3600000);
@@ -291,7 +295,7 @@ function render(){
       font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">${lbl}</text>`;
   }
 
-  // Event bars — click only
+  // Event bars — click only, text wraps via foreignObject
   dayEvts.forEach(e=>{
     const ri=vmap[e.venue];
     if(ri===undefined)return;
@@ -300,10 +304,7 @@ function render(){
     const bw=Math.max(4,x1-x0-2);
     const by=ri*ROW_H+5;
     const bh=ROW_H-10;
-    const iid=`b${e.item_id||Math.random().toString(36).slice(2)}`;
     const title=esc(e.title||'');
-
-    defs+=`<clipPath id="c${iid}"><rect x="${x0+1}" y="${by}" width="${Math.max(0,bw-8)}" height="${bh}"/></clipPath>`;
 
     bars+=`<rect rx="5" x="${x0+1}" y="${by}" width="${Math.max(3,bw-2)}" height="${bh}"
       fill="${e.color}" fill-opacity=".85" style="cursor:pointer;transition:filter .1s"
@@ -313,11 +314,13 @@ function render(){
       onmouseup="this.style.filter=''"
       onmouseleave="this.style.filter=''"/>`;
 
-    if(bw>24){
-      bars+=`<text clip-path="url(#c${iid})" x="${x0+6}" y="${by+bh/2+5}"
-        fill="rgba(255,255,255,.95)" font-size="12" font-weight="500"
-        font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif"
-        pointer-events="none">${title}</text>`;
+    if(bw>28){
+      const foW=Math.max(0,bw-10);
+      bars+=`<foreignObject x="${x0+5}" y="${by}" width="${foW}" height="${bh}" pointer-events="none">
+<div xmlns="http://www.w3.org/1999/xhtml" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+<span style="font-size:11px;font-weight:500;color:rgba(255,255,255,.93);line-height:1.3;word-break:break-word;overflow:hidden;text-align:center;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;">${title}</span>
+</div>
+</foreignObject>`;
     }
   });
 
@@ -331,7 +334,6 @@ function render(){
   // Bars SVG (row 2, col 2)
   document.getElementById('ganttCol').innerHTML=`
 <svg width="${svgW}" height="${barsH}" style="display:block">
-  <defs>${defs}</defs>
   <rect width="${svgW}" height="${barsH}" fill="#1e1e2c"/>
   ${bgs}${vlines}${bars}
 </svg>`;
@@ -351,25 +353,31 @@ function openModal(id){
   const e=evts.find(x=>String(x.item_id)===String(id));
   if(!e)return;
 
-  let html='';
-  if(e.thumbnail_url&&e.thumbnail_url.trim())
-    html+=`<img class="m-thumb" src="${esc(e.thumbnail_url.trim())}" onerror="this.style.display='none'" alt="">`;
+  // Text column — always shown first / fully
+  let textHtml='';
+  textHtml+=`<div class="m-badge" style="background:${e.color}33;color:${e.color}">${esc(e.session_type)}</div>`;
+  textHtml+=`<div class="m-title">${esc(e.title||'(Untitled)')}</div>`;
+  textHtml+=`<div class="m-meta">📍 ${esc(e.venue)}</div>`;
+  textHtml+=`<div class="m-meta">🕐 ${ft(e.sm)} – ${ft(e.em)} · ${fdur(e.sm,e.em)}</div>`;
+  if(e.date&&e.date.trim()) textHtml+=`<div class="m-meta">📅 ${esc(e.date)}</div>`;
+  if(e.speakers&&e.speakers.trim()) textHtml+=`<div class="m-spk">${esc(e.speakers)}</div>`;
+  if(e.description&&e.description.trim()) textHtml+=`<div class="m-desc">${esc(e.description)}</div>`;
+  if(e.fast_passes_status&&e.fast_passes_status.trim()) textHtml+=`<div class="m-fp">⚡ ${esc(e.fast_passes_status)}</div>`;
 
-  html+=`<div class="m-badge" style="background:${e.color}33;color:${e.color}">${esc(e.session_type)}</div>`;
-  html+=`<div class="m-title">${esc(e.title||'(Untitled)')}</div>`;
-  html+=`<div class="m-meta">📍 ${esc(e.venue)}</div>`;
-  html+=`<div class="m-meta">🕐 ${ft(e.sm)} – ${ft(e.em)} &nbsp;·&nbsp; ${fdur(e.sm,e.em)}</div>`;
-  if(e.date&&e.date.trim()) html+=`<div class="m-meta">📅 ${esc(e.date)}</div>`;
-  if(e.speakers&&e.speakers.trim()) html+=`<div class="m-spk">${esc(e.speakers)}</div>`;
-  if(e.description&&e.description.trim()) html+=`<div class="m-desc">${esc(e.description)}</div>`;
-  if(e.fast_passes_status&&e.fast_passes_status.trim()) html+=`<div class="m-fp">⚡ ${esc(e.fast_passes_status)}</div>`;
+  // Image column — right side, optional
+  const hasThumb = e.thumbnail_url&&e.thumbnail_url.trim();
+  const imgHtml = hasThumb
+    ? `<div class="m-image"><img src="${esc(e.thumbnail_url.trim())}" onerror="this.parentElement.style.display='none'" alt=""></div>`
+    : '';
 
+  // Links below the layout row
   const lnks=[];
   if(e.event_url&&e.event_url.trim()) lnks.push(`<a class="m-lnk ev" href="${esc(e.event_url)}" target="_blank">More info ↗</a>`);
   if(e.ticket_url&&e.ticket_url.trim()) lnks.push(`<a class="m-lnk tk" href="${esc(e.ticket_url)}" target="_blank">Tickets ↗</a>`);
-  if(lnks.length) html+=`<div class="m-links">${lnks.join('')}</div>`;
+  const linksHtml = lnks.length ? `<div class="m-links">${lnks.join('')}</div>` : '';
 
-  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal-body').innerHTML=
+    `<div class="m-layout"><div class="m-text">${textHtml}</div>${imgHtml}</div>${linksHtml}`;
   document.getElementById('modal-card').scrollTop=0;
   document.getElementById('modal-overlay').classList.add('vis');
 }
