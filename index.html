@@ -201,7 +201,9 @@ evts.forEach(e=>{
 });
 TYPE_LIST.sort((a,b)=>a.lbl.localeCompare(b.lbl));
 
-let activeDay = 0;
+const _today = new Date();
+const _todayStr = `${_today.getFullYear()}-${String(_today.getMonth()+1).padStart(2,'0')}-${String(_today.getDate()).padStart(2,'0')}`;
+let activeDay = Math.max(0, DAYS.findIndex(d => d.s.startsWith(_todayStr)));
 const hidden = new Set(DEFAULT_HIDDEN);
 
 const ROW_H = 60;   // row height px
