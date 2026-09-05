@@ -1,0 +1,692 @@
+@import "./theme.css";
+
+/*
+ * Mobile-first. Every rule below describes the phone layout (iPhone SE,
+ * 375x667, is the baseline this was built and checked against) with no
+ * media query at all. The single `@media (min-width: 640px)` block at the
+ * bottom of this file is what *adds* room for a tablet/desktop - it never
+ * carries anything the phone layout depends on. If you're tempted to add a
+ * second breakpoint, prefer widening what's here over branching further.
+ */
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Top bar: brand + condensed stats only. Primary navigation lives in the
+   fixed bottom tab bar (.bottom-nav) on a phone, where it's reachable with a
+   thumb - it moves back into this bar only at the wide breakpoint. */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  padding-top: calc(var(--space-2) + var(--safe-top));
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.app-header__brand {
+  font-weight: 700;
+  font-size: 1rem;
+  text-decoration: none;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-header__nav {
+  display: none; /* shown at the wide breakpoint; .bottom-nav covers phones */
+}
+
+.app-header__nav a {
+  text-decoration: none;
+  color: var(--color-text-muted);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.app-header__nav a.active,
+.app-header__nav a:hover {
+  color: var(--color-text);
+  background: var(--color-surface-alt);
+}
+
+.app-header__stats {
+  display: flex;
+  gap: var(--space-2);
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.app-header__stats::-webkit-scrollbar {
+  display: none;
+}
+
+.app-header__stat {
+  white-space: nowrap;
+}
+
+.app-header__stat strong {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+.app-header__offline {
+  font-size: 0.68rem;
+  color: var(--color-warning);
+  padding: 2px 6px;
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-sm);
+  white-space: nowrap;
+}
+
+/* Fixed bottom tab bar: the primary navigation on a phone. Thumb-reachable,
+   safe-area aware for the home-indicator inset on notched iPhones. */
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 20;
+  display: flex;
+  background: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  padding-bottom: var(--safe-bottom);
+  padding-left: var(--safe-left);
+  padding-right: var(--safe-right);
+}
+
+.bottom-nav__link {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-height: var(--bottom-nav-height);
+  text-decoration: none;
+  color: var(--color-text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.bottom-nav__icon {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.bottom-nav__link.active {
+  color: var(--color-primary);
+}
+
+.app-main {
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+  padding: var(--space-3);
+  padding-left: calc(var(--space-3) + var(--safe-left));
+  padding-right: calc(var(--space-3) + var(--safe-right));
+  /* Clears the fixed bottom tab bar so the last card is never hidden behind it. */
+  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-4));
+}
+
+.page-title {
+  margin: 0 0 var(--space-3);
+  font-size: 1.2rem;
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  box-shadow: var(--shadow-sm);
+}
+
+.card + .card {
+  margin-top: var(--space-3);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  min-height: var(--touch-target);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.button--primary {
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+}
+.button--primary:hover {
+  background: var(--color-primary-hover);
+}
+.button--secondary {
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+.button--secondary:hover {
+  background: var(--color-border);
+}
+.button--ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+}
+.button--ghost:hover {
+  color: var(--color-text);
+}
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: var(--color-surface-alt);
+  overflow: hidden;
+}
+.progress-bar__fill {
+  height: 100%;
+  background: var(--color-accent);
+  transition: width 0.2s ease;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--color-surface-alt);
+  color: var(--color-text-muted);
+}
+.badge--due {
+  background: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  color: var(--color-warning);
+}
+.badge--done {
+  background: color-mix(in srgb, var(--color-success) 20%, transparent);
+  color: var(--color-success);
+}
+.badge--stub {
+  background: color-mix(in srgb, var(--color-text-muted) 15%, transparent);
+}
+
+.mastery-dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+.mastery-dot--new { background: var(--color-mastery-new); }
+.mastery-dot--learning { background: var(--color-mastery-learning); }
+.mastery-dot--young { background: var(--color-mastery-young); }
+.mastery-dot--mature { background: var(--color-mastery-mature); }
+
+.lesson-list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.lesson-card {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  color: var(--color-text);
+}
+.lesson-card:hover {
+  border-color: var(--color-primary);
+}
+.lesson-card__meta {
+  flex: 1;
+  min-width: 0;
+}
+.lesson-card__title {
+  font-weight: 600;
+  margin: 0 0 4px;
+  font-size: 0.95rem;
+}
+.lesson-card__sub {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.resume-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+}
+.resume-card > a {
+  width: 100%;
+}
+.resume-card .button {
+  width: 100%;
+}
+
+.turn-card {
+  padding: var(--space-3);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  margin-bottom: var(--space-2);
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+  overflow-wrap: anywhere;
+}
+.turn-card--active {
+  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
+  border-color: var(--color-accent);
+}
+.turn-card__speaker {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-bottom: 4px;
+}
+.turn-card__line {
+  margin: 2px 0;
+}
+.turn-card__line--devanagari {
+  font-size: 1.1rem;
+}
+.turn-card__line--english {
+  color: var(--color-text-muted);
+}
+.span--active {
+  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
+  border-radius: 3px;
+  padding: 0 2px;
+}
+.span--listened {
+  color: var(--color-accent);
+}
+
+.player-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-md);
+}
+.player-controls select {
+  max-width: 100%;
+  min-width: 0;
+  flex: 1 1 160px;
+}
+
+.vocab-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2);
+}
+.vocab-item {
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  min-width: 0;
+}
+.vocab-item__text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.vocab-item__devanagari {
+  font-size: 1.1rem;
+}
+.vocab-item__romanized {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.vocab-item__english {
+  font-size: 0.85rem;
+}
+
+.game-tile {
+  padding: var(--space-3);
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  cursor: pointer;
+  text-align: center;
+  font-size: 0.95rem;
+  min-height: var(--touch-target);
+  overflow-wrap: anywhere;
+}
+.game-tile:hover {
+  border-color: var(--color-primary);
+}
+.game-tile--selected {
+  border-color: var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+}
+.game-tile--correct {
+  border-color: var(--color-success);
+  background: color-mix(in srgb, var(--color-success) 15%, var(--color-surface));
+}
+.game-tile--incorrect {
+  border-color: var(--color-danger);
+  background: color-mix(in srgb, var(--color-danger) 15%, var(--color-surface));
+}
+.game-tile--matched {
+  opacity: 0.4;
+  pointer-events: none;
+}
+.game-tile--flipped {
+  border-color: var(--color-accent);
+}
+
+/* Fixed 2 columns on a phone: predictable and touch-sized at 375px, rather
+   than leaving auto-fit to decide (it can land on an awkward 3-up that makes
+   tile text wrap badly on a narrow screen). */
+.game-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+.stat-tile {
+  padding: var(--space-3);
+  text-align: center;
+}
+.stat-tile__value {
+  font-size: 1.6rem;
+  font-weight: 700;
+}
+.stat-tile__label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.category-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.category-row__label {
+  width: 100%;
+  font-size: 0.8rem;
+  text-transform: capitalize;
+}
+.category-row__bar {
+  flex: 1;
+  min-width: 0;
+  height: 14px;
+  border-radius: 999px;
+  overflow: hidden;
+  display: flex;
+  background: var(--color-surface-alt);
+}
+
+.heatmap {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(10px, 1fr));
+  gap: 3px;
+}
+.heatmap__cell {
+  aspect-ratio: 1;
+  border-radius: 2px;
+  background: var(--color-surface-alt);
+}
+
+.weak-item-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.85rem;
+}
+
+.error-banner {
+  background: color-mix(in srgb, var(--color-warning) 15%, var(--color-surface));
+  border: 1px solid var(--color-warning);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  margin-bottom: var(--space-3);
+  font-size: 0.82rem;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--color-text-muted);
+  padding: var(--space-5) var(--space-3);
+}
+
+.session-summary {
+  text-align: center;
+}
+.session-summary__score {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+/* 16px is not a stylistic choice - anything smaller makes iOS Safari zoom
+   the whole page in on focus, which then never zooms back out on blur. This
+   is the single most important line in this file for the iPhone SE. */
+input[type="text"],
+input[type="number"],
+select {
+  font-family: inherit;
+  font-size: 16px;
+  padding: var(--space-2) var(--space-3);
+  min-height: var(--touch-target);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.word-bank {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.build-area {
+  min-height: var(--touch-target);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-3);
+}
+
+/* A row of "type an answer" + "Check" that stacks below the input rather
+   than clipping it when both need to fit under ~340px of usable width. */
+.answer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+}
+.answer-row input[type="text"] {
+  flex: 1 1 180px;
+}
+
+/* Rows of free-standing buttons (difficulty toggles, summary actions) that
+   must never overflow a 375px viewport. */
+.button-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+/* --------------------------------------------------------------------
+   Wide breakpoint: tablets and desktops get a roomier layout and the
+   navigation moves back into the top bar. Nothing above this line should
+   depend on anything below it.
+   -------------------------------------------------------------------- */
+@media (min-width: 640px) {
+  .app-header {
+    padding: var(--space-3) var(--space-5);
+    padding-top: calc(var(--space-3) + var(--safe-top));
+    gap: var(--space-4);
+  }
+  .app-header__brand {
+    font-size: 1.1rem;
+  }
+  .app-header__nav {
+    display: flex;
+    gap: var(--space-3);
+  }
+  .app-header__stats {
+    gap: var(--space-4);
+    font-size: 0.85rem;
+    overflow-x: visible;
+  }
+  .app-header__offline {
+    font-size: 0.75rem;
+  }
+
+  .bottom-nav {
+    display: none;
+  }
+
+  .app-main {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: var(--space-5);
+    padding-bottom: var(--space-5);
+  }
+
+  .page-title {
+    margin: 0 0 var(--space-4);
+    font-size: 1.4rem;
+  }
+
+  .card {
+    border-radius: var(--radius-lg);
+    padding: var(--space-5);
+  }
+  .card + .card {
+    margin-top: var(--space-4);
+  }
+
+  .lesson-card {
+    gap: var(--space-4);
+    padding: var(--space-4);
+  }
+  .lesson-card__title {
+    font-size: 1rem;
+  }
+
+  .resume-card > a,
+  .resume-card .button {
+    width: auto;
+  }
+
+  .turn-card {
+    padding: var(--space-3) var(--space-4);
+  }
+  .turn-card__line--devanagari {
+    font-size: 1.15rem;
+  }
+
+  .player-controls {
+    gap: var(--space-3);
+    padding: var(--space-3);
+  }
+
+  .vocab-grid {
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .game-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-3);
+  }
+
+  .stat-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-4);
+  }
+  .stat-tile {
+    padding: var(--space-4);
+  }
+  .stat-tile__value {
+    font-size: 1.8rem;
+  }
+
+  .category-row {
+    flex-wrap: nowrap;
+    gap: var(--space-3);
+  }
+  .category-row__label {
+    width: 90px;
+  }
+
+  .heatmap {
+    grid-template-columns: repeat(auto-fill, minmax(12px, 1fr));
+  }
+
+  .error-banner {
+    padding: var(--space-3) var(--space-4);
+    margin-bottom: var(--space-4);
+    font-size: 0.85rem;
+  }
+
+  .empty-state {
+    padding: var(--space-6);
+  }
+
+  .session-summary__score {
+    font-size: 2.4rem;
+  }
+}

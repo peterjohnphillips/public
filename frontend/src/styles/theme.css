@@ -1,0 +1,124 @@
+/* Small design-system-agnostic token set. No component library: a personal
+   tool doesn't need one, and this keeps the bundle tiny. */
+
+:root {
+  --color-bg: #faf9f7;
+  --color-surface: #ffffff;
+  --color-surface-alt: #f1efe9;
+  --color-border: #e4e0d6;
+  --color-text: #221f1a;
+  --color-text-muted: #6b6557;
+  --color-primary: #b5502f;
+  --color-primary-hover: #963f22;
+  --color-primary-contrast: #ffffff;
+  --color-accent: #2f6f5e;
+  --color-success: #2f7d4f;
+  --color-warning: #b8862b;
+  --color-danger: #b5502f;
+
+  --color-mastery-new: #cfcabf;
+  --color-mastery-learning: #d99b4e;
+  --color-mastery-young: #6fa87c;
+  --color-mastery-mature: #2f6f5e;
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --shadow-sm: 0 1px 2px rgba(30, 25, 15, 0.08);
+  --shadow-md: 0 4px 16px rgba(30, 25, 15, 0.10);
+
+  --font-devanagari: "Noto Sans Devanagari", "Mangal", system-ui, sans-serif;
+  --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Layout is mobile-first: these describe the phone chrome and are widened
+     by the min-width breakpoint in app.css, not the other way round. */
+  --header-height: 52px;
+  --bottom-nav-height: 56px;
+  --touch-target: 44px; /* Apple HIG minimum */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: #1a1815;
+    --color-surface: #24211c;
+    --color-surface-alt: #2c2921;
+    --color-border: #3a362c;
+    --color-text: #f1ede2;
+    --color-text-muted: #a89f8c;
+    --color-primary: #e07a52;
+    --color-primary-hover: #ec8c66;
+    --color-primary-contrast: #1a1815;
+    --color-accent: #6fbfa4;
+    --color-success: #6fbf8a;
+    --color-warning: #e0b35b;
+    --color-danger: #e07a52;
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-bg: #1a1815;
+  --color-surface: #24211c;
+  --color-surface-alt: #2c2921;
+  --color-border: #3a362c;
+  --color-text: #f1ede2;
+  --color-text-muted: #a89f8c;
+  --color-primary: #e07a52;
+  --color-primary-hover: #ec8c66;
+  --color-primary-contrast: #1a1815;
+  --color-accent: #6fbfa4;
+  --color-success: #6fbf8a;
+  --color-warning: #e0b35b;
+  --color-danger: #e07a52;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  /* iOS Safari bumps the page's own zoom on rotation unless this is pinned;
+     harmless everywhere else. */
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-body);
+  margin: 0;
+  /* A single accidentally-unwrapped row on a 375px screen becomes a
+     horizontal scrollbar for the whole page otherwise - the layout should
+     always resolve within the viewport width, so this is a deliberate
+     backstop, not a fix for any specific element. */
+  overflow-x: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.devanagari {
+  font-family: var(--font-devanagari);
+}
+
+a {
+  color: var(--color-primary);
+}
+
+button {
+  font-family: inherit;
+}

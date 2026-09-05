@@ -1,0 +1,27 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# Node
+node_modules/
+dist/
+.vite/
+*.local
+
+# App data (generated at runtime)
+data/
+*.db
+*.db-journal
+
+# Editors / OS
+.claude/settings.local.json
+*.tmp
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

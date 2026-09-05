@@ -1,0 +1,15 @@
+# Version floors rather than exact pins: this project targets Python 3.14,
+# and the floors below are the first releases with cp314 wheels.
+fastapi>=0.119
+uvicorn[standard]>=0.38
+sqlmodel>=0.0.27
+sqlalchemy>=2.0.44
+pydantic>=2.12
+pydantic-settings>=2.11
+python-frontmatter>=1.1
+PyYAML>=6.0.3
+watchdog>=6.0
+
+# dev / test
+pytest>=8.4
+httpx>=0.28
