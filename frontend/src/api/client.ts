@@ -1,7 +1,11 @@
 /**
- * Thin fetch wrapper. Relative /api paths only, so Vite's dev proxy (and any
- * later reverse proxy) works without touching this code.
+ * API layer. The single-file GitHub Pages build has no server, so requests are
+ * served in-process by local/backend.ts against browser storage. The public
+ * shape (`api.get/post/put`, `ApiError`) is unchanged, so nothing else in the
+ * app knows the difference.
  */
+
+import { LocalApiError, localRequest } from "../local/backend";
 
 export class ApiError extends Error {
   status: number;
@@ -29,38 +33,17 @@ async function request<T>(
   path: string,
   init?: RequestInit & { params?: QueryParams },
 ): Promise<T> {
-  const { params, ...rest } = init ?? {};
-  const url = new URL(`/api${path}`, window.location.origin);
-  if (params) {
-    for (const [key, value] of Object.entries(params)) {
-      if (value !== undefined && value !== null) {
-        url.searchParams.set(key, String(value));
-      }
+  const { params, method = "GET", body } = init ?? {};
+  const parsedBody = typeof body === "string" ? JSON.parse(body) : undefined;
+
+  try {
+    return await localRequest<T>(method, path, params, parsedBody);
+  } catch (error) {
+    if (error instanceof LocalApiError) {
+      throw new ApiError(error.status, error.body);
     }
+    throw error;
   }
-
-  const response = await fetch(url.toString(), {
-    ...rest,
-    headers: {
-      "Content-Type": "application/json",
-      ...rest.headers,
-    },
-  });
-
-  if (!response.ok) {
-    let body: unknown = null;
-    try {
-      body = await response.json();
-    } catch {
-      // Non-JSON error body (e.g. the backend is not running at all).
-    }
-    throw new ApiError(response.status, body);
-  }
-
-  if (response.status === 204) {
-    return undefined as T;
-  }
-  return (await response.json()) as T;
 }
 
 export const api = {
