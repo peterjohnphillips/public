@@ -7,12 +7,31 @@
  * bottom of this file is what *adds* room for a tablet/desktop - it never
  * carries anything the phone layout depends on. If you're tempted to add a
  * second breakpoint, prefer widening what's here over branching further.
+ *
+ * Visual language: frosted-glass panels on a dark keynote stage. The shared
+ * `.glass` treatment (translucent fill + backdrop blur + top highlight +
+ * hairline border) is applied to every floating surface so they read as one
+ * material. Colour is rationed - saffron means "act", teal means "progress".
  */
 
 .app-shell {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+}
+
+/* ----- Shared frosted-glass material ----------------------------------- */
+.glass,
+.card,
+.lesson-card,
+.vocab-item,
+.game-tile,
+.turn-card,
+.player-controls,
+.app-header,
+.bottom-nav {
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+  backdrop-filter: blur(var(--glass-blur)) saturate(150%);
 }
 
 /* Top bar: brand + condensed stats only. Primary navigation lives in the
@@ -28,18 +47,30 @@
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   padding-top: calc(var(--space-2) + var(--safe-top));
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--glass-bg-strong);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset,
+    0 12px 30px -20px rgba(0, 0, 0, 0.8);
 }
 
 .app-header__brand {
   font-weight: 700;
   font-size: 1rem;
+  letter-spacing: 0.01em;
   text-decoration: none;
   color: var(--color-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  background: linear-gradient(
+    100deg,
+    var(--color-text) 0%,
+    var(--color-primary) 55%,
+    var(--color-accent) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .app-header__nav {
@@ -49,9 +80,10 @@
 .app-header__nav a {
   text-decoration: none;
   color: var(--color-text-muted);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-sm);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 999px;
   font-size: 0.9rem;
+  transition: color 0.15s ease, background-color 0.15s ease;
 }
 
 .app-header__nav a.active,
@@ -74,11 +106,15 @@
 
 .app-header__stat {
   white-space: nowrap;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--color-surface-alt);
+  border: 1px solid var(--glass-border);
 }
 
 .app-header__stat strong {
   color: var(--color-text);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .app-header__offline {
@@ -86,24 +122,25 @@
   color: var(--color-warning);
   padding: 2px 6px;
   border: 1px solid var(--color-warning);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   white-space: nowrap;
 }
 
 /* Fixed bottom tab bar: the primary navigation on a phone. Thumb-reachable,
-   safe-area aware for the home-indicator inset on notched iPhones. */
+   safe-area aware for the home-indicator inset on notched iPhones. Floated
+   just clear of the edges so it reads as a glass pill, not a docked strip. */
 .bottom-nav {
   position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  left: max(var(--space-3), var(--safe-left));
+  right: max(var(--space-3), var(--safe-right));
+  bottom: max(var(--space-2), var(--safe-bottom));
   z-index: 20;
   display: flex;
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
-  padding-bottom: var(--safe-bottom);
-  padding-left: var(--safe-left);
-  padding-right: var(--safe-right);
+  background: var(--glass-bg-strong);
+  border: 1px solid var(--glass-border);
+  border-radius: 999px;
+  box-shadow: 0 1px 0 var(--glass-highlight) inset, var(--shadow-md);
+  overflow: hidden;
 }
 
 .bottom-nav__link {
@@ -118,6 +155,7 @@
   color: var(--color-text-muted);
   font-size: 0.68rem;
   font-weight: 600;
+  transition: color 0.15s ease;
 }
 
 .bottom-nav__icon {
@@ -127,6 +165,20 @@
 
 .bottom-nav__link.active {
   color: var(--color-primary);
+  position: relative;
+}
+.bottom-nav__link.active::after {
+  content: "";
+  position: absolute;
+  top: 8px;
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, var(--color-primary) 30%, transparent) 0%,
+    transparent 70%
+  );
 }
 
 .app-main {
@@ -136,21 +188,37 @@
   padding: var(--space-3);
   padding-left: calc(var(--space-3) + var(--safe-left));
   padding-right: calc(var(--space-3) + var(--safe-right));
-  /* Clears the fixed bottom tab bar so the last card is never hidden behind it. */
-  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-4));
+  /* Clears the floating bottom tab bar so the last card is never hidden. */
+  padding-bottom: calc(var(--bottom-nav-height) + var(--safe-bottom) + var(--space-5));
 }
 
 .page-title {
-  margin: 0 0 var(--space-3);
-  font-size: 1.2rem;
+  margin: 0 0 var(--space-4);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
 }
 
+/* ----- Card: the workhorse glass panel, with a henna corner motif ------- */
 .card {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  padding: var(--space-3);
-  box-shadow: var(--shadow-sm);
+  padding: var(--space-4);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset, var(--shadow-md);
+  overflow: hidden;
+}
+.card::after {
+  content: "";
+  position: absolute;
+  right: -60px;
+  bottom: -60px;
+  width: 190px;
+  height: 190px;
+  background: var(--pattern-henna) center / contain no-repeat;
+  opacity: 0.07;
+  pointer-events: none;
 }
 
 .card + .card {
@@ -158,34 +226,48 @@
 }
 
 .button {
+  position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
   border: 1px solid transparent;
-  border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-4);
+  border-radius: 999px;
+  padding: var(--space-2) var(--space-5);
   min-height: var(--touch-target);
   font-size: 0.95rem;
-  font-weight: 600;
+  font-weight: 650;
+  letter-spacing: 0.01em;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.15s ease,
+    filter 0.15s ease;
+}
+.button:active {
+  transform: translateY(1px) scale(0.99);
 }
 
 .button--primary {
-  background: var(--color-primary);
+  background: linear-gradient(
+    140deg,
+    var(--color-primary-hover),
+    var(--color-primary)
+  );
   color: var(--color-primary-contrast);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, var(--glow-primary);
 }
 .button--primary:hover {
-  background: var(--color-primary-hover);
+  filter: brightness(1.06);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.35) inset, var(--glow-primary),
+    0 0 22px -2px color-mix(in srgb, var(--color-primary) 45%, transparent);
 }
 .button--secondary {
   background: var(--color-surface-alt);
   color: var(--color-text);
-  border-color: var(--color-border);
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset;
 }
 .button--secondary:hover {
-  background: var(--color-border);
+  background: color-mix(in srgb, var(--color-text) 10%, transparent);
 }
 .button--ghost {
   background: transparent;
@@ -195,8 +277,9 @@
   color: var(--color-text);
 }
 .button:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
+  filter: grayscale(0.3);
 }
 
 .progress-bar {
@@ -204,11 +287,17 @@
   border-radius: 999px;
   background: var(--color-surface-alt);
   overflow: hidden;
+  border: 1px solid var(--glass-border);
 }
 .progress-bar__fill {
   height: 100%;
-  background: var(--color-accent);
-  transition: width 0.2s ease;
+  background: linear-gradient(
+    90deg,
+    var(--color-accent),
+    color-mix(in srgb, var(--color-accent) 55%, var(--color-primary))
+  );
+  box-shadow: 0 0 12px -1px color-mix(in srgb, var(--color-accent) 60%, transparent);
+  transition: width 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .badge {
@@ -216,17 +305,20 @@
   align-items: center;
   gap: 4px;
   font-size: 0.75rem;
-  padding: 2px 8px;
+  padding: 2px 10px;
   border-radius: 999px;
   background: var(--color-surface-alt);
+  border: 1px solid var(--glass-border);
   color: var(--color-text-muted);
 }
 .badge--due {
   background: color-mix(in srgb, var(--color-warning) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-warning) 40%, transparent);
   color: var(--color-warning);
 }
 .badge--done {
   background: color-mix(in srgb, var(--color-success) 20%, transparent);
+  border-color: color-mix(in srgb, var(--color-success) 40%, transparent);
   color: var(--color-success);
 }
 .badge--stub {
@@ -239,11 +331,12 @@
   height: 9px;
   border-radius: 999px;
   flex-shrink: 0;
+  box-shadow: 0 0 8px -1px currentColor;
 }
-.mastery-dot--new { background: var(--color-mastery-new); }
-.mastery-dot--learning { background: var(--color-mastery-learning); }
-.mastery-dot--young { background: var(--color-mastery-young); }
-.mastery-dot--mature { background: var(--color-mastery-mature); }
+.mastery-dot--new { background: var(--color-mastery-new); color: var(--color-mastery-new); box-shadow: none; }
+.mastery-dot--learning { background: var(--color-mastery-learning); color: var(--color-mastery-learning); }
+.mastery-dot--young { background: var(--color-mastery-young); color: var(--color-mastery-young); }
+.mastery-dot--mature { background: var(--color-mastery-mature); color: var(--color-mastery-mature); }
 
 .lesson-list {
   display: grid;
@@ -251,25 +344,45 @@
 }
 
 .lesson-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  padding: var(--space-3);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
+  padding: var(--space-4);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset, var(--shadow-sm);
   text-decoration: none;
   color: var(--color-text);
+  overflow: hidden;
+  transition: transform 0.16s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+.lesson-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(var(--color-primary), var(--color-accent));
+  opacity: 0;
+  transition: opacity 0.2s ease;
 }
 .lesson-card:hover {
-  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset, var(--shadow-md);
+}
+.lesson-card:hover::before {
+  opacity: 1;
 }
 .lesson-card__meta {
   flex: 1;
   min-width: 0;
 }
 .lesson-card__title {
-  font-weight: 600;
+  font-weight: 650;
   margin: 0 0 4px;
   font-size: 0.95rem;
 }
@@ -287,8 +400,13 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-  border: 1px solid color-mix(in srgb, var(--color-primary) 35%, var(--color-border));
+  background: linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--color-primary) 22%, transparent),
+      transparent 60%
+    ),
+    var(--glass-bg-strong);
+  border: 1px solid color-mix(in srgb, var(--color-primary) 40%, var(--glass-border));
 }
 .resume-card > a {
   width: 100%;
@@ -298,23 +416,31 @@
 }
 
 .turn-card {
-  padding: var(--space-3);
+  padding: var(--space-3) var(--space-4);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
+  background: var(--color-surface-alt);
   margin-bottom: var(--space-2);
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: background-color 0.25s ease, border-color 0.25s ease,
+    box-shadow 0.25s ease;
   overflow-wrap: anywhere;
 }
 .turn-card--active {
-  background: color-mix(in srgb, var(--color-accent) 12%, var(--color-surface));
-  border-color: var(--color-accent);
+  background: linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--color-accent) 18%, transparent),
+      transparent 65%
+    ),
+    var(--glass-bg);
+  border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  box-shadow: var(--glow-accent);
 }
 .turn-card__speaker {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: var(--color-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.08em;
   margin-bottom: 4px;
 }
 .turn-card__line {
@@ -327,9 +453,10 @@
   color: var(--color-text-muted);
 }
 .span--active {
-  background: color-mix(in srgb, var(--color-accent) 30%, transparent);
-  border-radius: 3px;
-  padding: 0 2px;
+  background: color-mix(in srgb, var(--color-accent) 32%, transparent);
+  border-radius: 4px;
+  padding: 0 3px;
+  box-shadow: 0 0 10px -1px color-mix(in srgb, var(--color-accent) 45%, transparent);
 }
 .span--listened {
   color: var(--color-accent);
@@ -341,9 +468,11 @@
   gap: var(--space-2);
   flex-wrap: wrap;
   margin-bottom: var(--space-3);
-  padding: var(--space-2);
-  background: var(--color-surface-alt);
+  padding: var(--space-3);
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset;
 }
 .player-controls select {
   max-width: 100%;
@@ -358,13 +487,18 @@
 }
 .vocab-item {
   padding: var(--space-3);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
+  background: var(--color-surface-alt);
   display: flex;
   align-items: flex-start;
   gap: var(--space-2);
   min-width: 0;
+  transition: transform 0.14s ease, border-color 0.18s ease;
+}
+.vocab-item:hover {
+  transform: translateY(-1px);
+  border-color: var(--glass-border-strong);
 }
 .vocab-item__text {
   flex: 1;
@@ -384,36 +518,51 @@
 
 .game-tile {
   padding: var(--space-3);
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--glass-border);
   border-radius: var(--radius-md);
-  background: var(--color-surface);
+  background: var(--glass-bg);
+  color: var(--color-text);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset;
   cursor: pointer;
   text-align: center;
   font-size: 0.95rem;
   min-height: var(--touch-target);
   overflow-wrap: anywhere;
+  transition: transform 0.14s ease, box-shadow 0.2s ease, border-color 0.2s ease,
+    background-color 0.2s ease;
 }
 .game-tile:hover {
-  border-color: var(--color-primary);
+  transform: translateY(-2px);
+  border-color: var(--glass-border-strong);
+  box-shadow: 0 1px 0 var(--glass-highlight) inset, var(--shadow-md);
 }
 .game-tile--selected {
-  border-color: var(--color-primary);
-  background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-primary) 60%, transparent);
+  background: linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--color-primary) 20%, transparent),
+      transparent 60%
+    ),
+    var(--glass-bg);
+  box-shadow: var(--glow-primary);
 }
 .game-tile--correct {
-  border-color: var(--color-success);
-  background: color-mix(in srgb, var(--color-success) 15%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-success) 60%, transparent);
+  background: color-mix(in srgb, var(--color-success) 16%, transparent);
+  box-shadow: 0 0 22px -6px color-mix(in srgb, var(--color-success) 60%, transparent);
 }
 .game-tile--incorrect {
-  border-color: var(--color-danger);
-  background: color-mix(in srgb, var(--color-danger) 15%, var(--color-surface));
+  border-color: color-mix(in srgb, var(--color-danger) 60%, transparent);
+  background: color-mix(in srgb, var(--color-danger) 16%, transparent);
+  box-shadow: 0 0 22px -6px color-mix(in srgb, var(--color-danger) 55%, transparent);
 }
 .game-tile--matched {
-  opacity: 0.4;
+  opacity: 0.35;
   pointer-events: none;
 }
 .game-tile--flipped {
-  border-color: var(--color-accent);
+  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  box-shadow: var(--glow-accent);
 }
 
 /* Fixed 2 columns on a phone: predictable and touch-sized at 375px, rather
@@ -431,12 +580,17 @@
   gap: var(--space-3);
 }
 .stat-tile {
-  padding: var(--space-3);
+  padding: var(--space-4) var(--space-3);
   text-align: center;
 }
 .stat-tile__value {
-  font-size: 1.6rem;
-  font-weight: 700;
+  font-size: 1.7rem;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+  background: linear-gradient(160deg, var(--color-text), var(--color-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 .stat-tile__label {
   font-size: 0.75rem;
@@ -463,6 +617,7 @@
   overflow: hidden;
   display: flex;
   background: var(--color-surface-alt);
+  border: 1px solid var(--glass-border);
 }
 
 .heatmap {
@@ -472,7 +627,7 @@
 }
 .heatmap__cell {
   aspect-ratio: 1;
-  border-radius: 2px;
+  border-radius: 3px;
   background: var(--color-surface-alt);
 }
 
@@ -483,13 +638,18 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-2) 0;
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--glass-border);
   font-size: 0.85rem;
 }
 
 .error-banner {
-  background: color-mix(in srgb, var(--color-warning) 15%, var(--color-surface));
-  border: 1px solid var(--color-warning);
+  background: linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--color-warning) 20%, transparent),
+      transparent 70%
+    ),
+    var(--glass-bg);
+  border: 1px solid color-mix(in srgb, var(--color-warning) 45%, transparent);
   border-radius: var(--radius-md);
   padding: var(--space-3);
   margin-bottom: var(--space-3);
@@ -507,8 +667,11 @@
 }
 .session-summary__score {
   font-size: 2.2rem;
-  font-weight: 700;
-  color: var(--color-primary);
+  font-weight: 750;
+  background: linear-gradient(160deg, var(--color-primary), var(--color-accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* 16px is not a stylistic choice - anything smaller makes iOS Safari zoom
@@ -521,12 +684,20 @@ select {
   font-size: 16px;
   padding: var(--space-2) var(--space-3);
   min-height: var(--touch-target);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--glass-border-strong);
   border-radius: var(--radius-sm);
-  background: var(--color-surface);
+  background: var(--color-surface-alt);
   color: var(--color-text);
   box-sizing: border-box;
   max-width: 100%;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+input[type="text"]:focus,
+input[type="number"]:focus,
+select:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--color-accent) 60%, transparent);
+  box-shadow: var(--glow-accent);
 }
 
 .word-bank {
@@ -542,8 +713,9 @@ select {
   flex-wrap: wrap;
   gap: var(--space-2);
   padding: var(--space-3);
-  border: 2px dashed var(--color-border);
+  border: 1px dashed var(--glass-border-strong);
   border-radius: var(--radius-md);
+  background: var(--color-surface-alt);
   margin-bottom: var(--space-3);
 }
 
@@ -567,6 +739,13 @@ select {
   gap: var(--space-2);
 }
 
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    transition-duration: 0.001ms !important;
+  }
+}
+
 /* --------------------------------------------------------------------
    Wide breakpoint: tablets and desktops get a roomier layout and the
    navigation moves back into the top bar. Nothing above this line should
@@ -583,11 +762,11 @@ select {
   }
   .app-header__nav {
     display: flex;
-    gap: var(--space-3);
+    gap: var(--space-2);
   }
   .app-header__stats {
-    gap: var(--space-4);
-    font-size: 0.85rem;
+    gap: var(--space-2);
+    font-size: 0.8rem;
     overflow-x: visible;
   }
   .app-header__offline {
@@ -599,15 +778,15 @@ select {
   }
 
   .app-main {
-    max-width: 960px;
+    max-width: 980px;
     margin: 0 auto;
-    padding: var(--space-5);
-    padding-bottom: var(--space-5);
+    padding: var(--space-6) var(--space-5);
+    padding-bottom: var(--space-6);
   }
 
   .page-title {
-    margin: 0 0 var(--space-4);
-    font-size: 1.4rem;
+    margin: 0 0 var(--space-5);
+    font-size: 1.6rem;
   }
 
   .card {
@@ -620,7 +799,7 @@ select {
 
   .lesson-card {
     gap: var(--space-4);
-    padding: var(--space-4);
+    padding: var(--space-4) var(--space-5);
   }
   .lesson-card__title {
     font-size: 1rem;
@@ -658,10 +837,10 @@ select {
     gap: var(--space-4);
   }
   .stat-tile {
-    padding: var(--space-4);
+    padding: var(--space-5) var(--space-4);
   }
   .stat-tile__value {
-    font-size: 1.8rem;
+    font-size: 1.9rem;
   }
 
   .category-row {
@@ -687,6 +866,6 @@ select {
   }
 
   .session-summary__score {
-    font-size: 2.4rem;
+    font-size: 2.6rem;
   }
 }

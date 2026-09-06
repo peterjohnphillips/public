@@ -1,13 +1,121 @@
 /* Small design-system-agnostic token set. No component library: a personal
-   tool doesn't need one, and this keeps the bundle tiny. */
+   tool doesn't need one, and this keeps the bundle tiny.
+
+   The look is a dark "keynote" stage: a near-black indigo ground lit by a
+   soft central spotlight, frosted-glass panels floating above it, and a
+   faint henna/mandala line-motif woven into the backdrop and card corners.
+   Colour is used sparingly - saffron for action, teal for progress - so the
+   accents read as deliberate rather than decorative. A light theme is kept
+   for `[data-theme="light"]` but the app is dark-first by design. */
 
 :root {
-  --color-bg: #faf9f7;
-  --color-surface: #ffffff;
-  --color-surface-alt: #f1efe9;
-  --color-border: #e4e0d6;
+  /* ---- Dark keynote palette (default) ---- */
+  --color-bg: #0a0b10;
+  --color-bg-tint-a: #171a2e; /* indigo spotlight */
+  --color-bg-tint-b: #10201f; /* teal counter-light */
+
+  /* Glass panels: translucent so the backdrop patterning shows through,
+     lifted by a top highlight and a hairline border. */
+  --glass-bg: linear-gradient(
+    155deg,
+    rgba(30, 34, 48, 0.72),
+    rgba(16, 18, 28, 0.55)
+  );
+  --glass-bg-strong: linear-gradient(
+    155deg,
+    rgba(38, 43, 60, 0.82),
+    rgba(20, 22, 34, 0.7)
+  );
+  --glass-blur: 22px;
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-strong: rgba(255, 255, 255, 0.18);
+  --glass-highlight: rgba(255, 255, 255, 0.14);
+
+  --color-surface: rgba(28, 31, 44, 0.66);
+  --color-surface-alt: rgba(255, 255, 255, 0.05);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-text: #eef0f7;
+  --color-text-muted: #9aa1b6;
+
+  --color-primary: #eda15c; /* henna / saffron */
+  --color-primary-hover: #f4b477;
+  --color-primary-contrast: #1c1206;
+  --color-accent: #5fd0bb; /* teal */
+  --color-success: #63d69c;
+  --color-warning: #ecbb63;
+  --color-danger: #ef8072;
+
+  --color-mastery-new: #4b5066;
+  --color-mastery-learning: #d99b4e;
+  --color-mastery-young: #5fb98f;
+  --color-mastery-mature: #5fd0bb;
+
+  --radius-sm: 9px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --space-7: 48px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 20px 50px -20px rgba(0, 0, 0, 0.75),
+    0 2px 10px -4px rgba(0, 0, 0, 0.5);
+  --glow-primary: 0 0 0 1px rgba(237, 161, 92, 0.4),
+    0 12px 40px -12px rgba(237, 161, 92, 0.4);
+  --glow-accent: 0 0 0 1px rgba(95, 208, 187, 0.4),
+    0 12px 40px -12px rgba(95, 208, 187, 0.35);
+
+  --font-devanagari: "Noto Sans Devanagari", "Mangal", system-ui, sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI",
+    system-ui, sans-serif;
+
+  /* Henna line-motifs, generated as vector data URIs (scripts/gen-patterns).
+     Colour comes from the stroke baked in; opacity is applied per use. */
+  --pattern-mandala: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22600%22%20height%3D%22600%22%20viewBox%3D%220%200%20600%20600%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.1%22%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22300%22%20r%3D%2270%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22300%22%20r%3D%22120%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22300%22%20r%3D%22175%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22300%22%20r%3D%22235%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22300%22%20r%3D%22285%22%2F%3E%3Cg%20transform%3D%22rotate%280%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%2830%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%2860%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%2890%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28120%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28150%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28180%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28210%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28240%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28270%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28300%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28330%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20130%20C%20330%20175%20330%20215%20300%20245%20C%20270%20215%20270%20175%20300%20130%20Z%22%2F%3E%3Ccircle%20cx%3D%22300%22%20cy%3D%22120%22%20r%3D%225%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%2815%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%2845%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%2875%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28105%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28135%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28165%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28195%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28225%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28255%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28285%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28315%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28345%20300%20300%29%22%3E%3Cpath%20d%3D%22M300%20210%20C%20350%20220%20365%20275%20335%20310%20C%20315%20333%20280%20330%20275%20305%20C%20271%20286%20285%20272%20303%20276%20C%20293%20285%20296%20299%20308%20300%20C%20326%20302%20335%20283%20330%20265%20C%20322%20236%20300%20226%20300%20210%20Z%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+  --pattern-henna: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22220%22%20height%3D%22220%22%20viewBox%3D%220%200%20220%20220%22%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.1%22%3E%3Cg%20transform%3D%22translate%28110%20110%29%22%3E%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2220%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2242%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2266%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%220%22%20r%3D%2292%22%2F%3E%3Cg%20transform%3D%22rotate%280%29%22%3E%3Cpath%20d%3D%22M0%20-30%20C%2016%20-18%2016%204%200%2020%20C%20-16%204%20-16%20-18%200%20-30%20Z%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-40%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%2845%29%22%3E%3Cpath%20d%3D%22M0%20-30%20C%2016%20-18%2016%204%200%2020%20C%20-16%204%20-16%20-18%200%20-30%20Z%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-40%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%2890%29%22%3E%3Cpath%20d%3D%22M0%20-30%20C%2016%20-18%2016%204%200%2020%20C%20-16%204%20-16%20-18%200%20-30%20Z%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-40%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28135%29%22%3E%3Cpath%20d%3D%22M0%20-30%20C%2016%20-18%2016%204%200%2020%20C%20-16%204%20-16%20-18%200%20-30%20Z%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-40%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28180%29%22%3E%3Cpath%20d%3D%22M0%20-30%20C%2016%20-18%2016%204%200%2020%20C%20-16%204%20-16%20-18%200%20-30%20Z%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-40%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28225%29%22%3E%3Cpath%20d%3D%22M0%20-30%20C%2016%20-18%2016%204%200%2020%20C%20-16%204%20-16%20-18%200%20-30%20Z%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-40%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28270%29%22%3E%3Cpath%20d%3D%22M0%20-30%20C%2016%20-18%2016%204%200%2020%20C%20-16%204%20-16%20-18%200%20-30%20Z%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-40%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3Cg%20transform%3D%22rotate%28315%29%22%3E%3Cpath%20d%3D%22M0%20-30%20C%2016%20-18%2016%204%200%2020%20C%20-16%204%20-16%20-18%200%20-30%20Z%22%2F%3E%3Ccircle%20cx%3D%220%22%20cy%3D%22-40%22%20r%3D%223%22%2F%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+
+  /* Layout: mobile-first phone chrome, widened at the breakpoint in app.css. */
+  --header-height: 52px;
+  --bottom-nav-height: 56px;
+  --touch-target: 44px; /* Apple HIG minimum */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+
+  color-scheme: dark;
+}
+
+:root[data-theme="light"] {
+  --color-bg: #f6f4ef;
+  --color-bg-tint-a: #efeae0;
+  --color-bg-tint-b: #e8f0ee;
+
+  --glass-bg: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.85),
+    rgba(255, 255, 255, 0.62)
+  );
+  --glass-bg-strong: linear-gradient(
+    155deg,
+    rgba(255, 255, 255, 0.94),
+    rgba(255, 255, 255, 0.8)
+  );
+  --glass-border: rgba(20, 18, 12, 0.1);
+  --glass-border-strong: rgba(20, 18, 12, 0.16);
+  --glass-highlight: rgba(255, 255, 255, 0.9);
+
+  --color-surface: rgba(255, 255, 255, 0.78);
+  --color-surface-alt: rgba(20, 18, 12, 0.045);
+  --color-border: rgba(20, 18, 12, 0.1);
   --color-text: #221f1a;
   --color-text-muted: #6b6557;
+
   --color-primary: #b5502f;
   --color-primary-hover: #963f22;
   --color-primary-contrast: #ffffff;
@@ -21,71 +129,15 @@
   --color-mastery-young: #6fa87c;
   --color-mastery-mature: #2f6f5e;
 
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 12px;
-  --space-4: 16px;
-  --space-5: 24px;
-  --space-6: 32px;
-  --space-7: 48px;
-
   --shadow-sm: 0 1px 2px rgba(30, 25, 15, 0.08);
-  --shadow-md: 0 4px 16px rgba(30, 25, 15, 0.10);
-
-  --font-devanagari: "Noto Sans Devanagari", "Mangal", system-ui, sans-serif;
-  --font-body: system-ui, -apple-system, "Segoe UI", sans-serif;
-
-  /* Layout is mobile-first: these describe the phone chrome and are widened
-     by the min-width breakpoint in app.css, not the other way round. */
-  --header-height: 52px;
-  --bottom-nav-height: 56px;
-  --touch-target: 44px; /* Apple HIG minimum */
-  --safe-top: env(safe-area-inset-top, 0px);
-  --safe-bottom: env(safe-area-inset-bottom, 0px);
-  --safe-left: env(safe-area-inset-left, 0px);
-  --safe-right: env(safe-area-inset-right, 0px);
+  --shadow-md: 0 18px 44px -20px rgba(30, 25, 15, 0.28),
+    0 2px 8px -4px rgba(30, 25, 15, 0.12);
+  --glow-primary: 0 0 0 1px rgba(181, 80, 47, 0.35),
+    0 12px 34px -14px rgba(181, 80, 47, 0.3);
+  --glow-accent: 0 0 0 1px rgba(47, 111, 94, 0.35),
+    0 12px 34px -14px rgba(47, 111, 94, 0.25);
 
   color-scheme: light;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --color-bg: #1a1815;
-    --color-surface: #24211c;
-    --color-surface-alt: #2c2921;
-    --color-border: #3a362c;
-    --color-text: #f1ede2;
-    --color-text-muted: #a89f8c;
-    --color-primary: #e07a52;
-    --color-primary-hover: #ec8c66;
-    --color-primary-contrast: #1a1815;
-    --color-accent: #6fbfa4;
-    --color-success: #6fbf8a;
-    --color-warning: #e0b35b;
-    --color-danger: #e07a52;
-    color-scheme: dark;
-  }
-}
-
-:root[data-theme="dark"] {
-  --color-bg: #1a1815;
-  --color-surface: #24211c;
-  --color-surface-alt: #2c2921;
-  --color-border: #3a362c;
-  --color-text: #f1ede2;
-  --color-text-muted: #a89f8c;
-  --color-primary: #e07a52;
-  --color-primary-hover: #ec8c66;
-  --color-primary-contrast: #1a1815;
-  --color-accent: #6fbfa4;
-  --color-success: #6fbf8a;
-  --color-warning: #e0b35b;
-  --color-danger: #e07a52;
-  color-scheme: dark;
 }
 
 * {
@@ -93,22 +145,48 @@
 }
 
 html {
-  /* iOS Safari bumps the page's own zoom on rotation unless this is pinned;
-     harmless everywhere else. */
   -webkit-text-size-adjust: 100%;
 }
 
 body {
-  background: var(--color-bg);
+  position: relative;
+  background-color: var(--color-bg);
+  /* Keynote stage: two soft coloured spotlights over a near-black ground. */
+  background-image: radial-gradient(
+      120% 80% at 12% -10%,
+      var(--color-bg-tint-a) 0%,
+      transparent 55%
+    ),
+    radial-gradient(
+      110% 75% at 100% 105%,
+      var(--color-bg-tint-b) 0%,
+      transparent 50%
+    );
+  background-repeat: no-repeat, no-repeat;
+  background-attachment: fixed, fixed;
   color: var(--color-text);
   font-family: var(--font-body);
   margin: 0;
-  /* A single accidentally-unwrapped row on a 375px screen becomes a
-     horizontal scrollbar for the whole page otherwise - the layout should
-     always resolve within the viewport width, so this is a deliberate
-     backstop, not a fix for any specific element. */
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+}
+
+/* A single large henna mandala hangs behind the stage - sensed, not seen -
+   and turns imperceptibly so the backdrop is never quite static. */
+body::before {
+  content: "";
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 200vmax;
+  height: 200vmax;
+  margin: -100vmax 0 0 -100vmax;
+  pointer-events: none;
+  z-index: -1;
+  background: var(--pattern-mandala) center / 720px 720px repeat;
+  opacity: 0.045;
+  mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
+  -webkit-mask-image: radial-gradient(circle at center, #000 0%, transparent 62%);
 }
 
 .devanagari {
@@ -121,4 +199,15 @@ a {
 
 button {
   font-family: inherit;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  body::before {
+    animation: mandala-drift 120s linear infinite;
+  }
+  @keyframes mandala-drift {
+    to {
+      transform: rotate(360deg);
+    }
+  }
 }
