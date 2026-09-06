@@ -199,7 +199,46 @@
   letter-spacing: -0.01em;
 }
 
-/* ----- Card: the workhorse glass panel, with a henna corner motif ------- */
+/* ----- Fractal henna motif, recoloured per surface ---------------------
+
+   The same fractal vine as the page backdrop, but here painted by masking a
+   colour (or gradient) through the SVG's alpha rather than using its baked
+   white. `--motif-fill` is the paint; each surface sets its own so the
+   pattern reads teal on cards, saffron on buttons, and so on. */
+.card,
+.lesson-card,
+.button,
+.resume-card,
+.stat-tile {
+  --motif-fill: linear-gradient(140deg, var(--color-accent), var(--color-primary));
+  --motif-opacity: 0.5;
+}
+.card::after,
+.lesson-card::after,
+.button::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: var(--motif-fill);
+  opacity: var(--motif-opacity);
+  /* A life-size crop of the vine, not the whole medallion shrunk to fit -
+     scaling the 760px artwork down to a card corner turns every stroke
+     sub-pixel and it disappears. `--motif-size` / `--motif-pos` place the
+     crop so tendrils curl in from one corner. Longhands, not the shorthand:
+     the 4-value position + `/` size shorthand parses unevenly across
+     engines and was silently dropping the whole declaration. */
+  -webkit-mask-image: var(--pattern-motif, var(--pattern-fractal));
+  mask-image: var(--pattern-motif, var(--pattern-fractal));
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: var(--motif-pos, right -140px top -140px);
+  mask-position: var(--motif-pos, right -140px top -140px);
+  -webkit-mask-size: var(--motif-size, 460px);
+  mask-size: var(--motif-size, 460px);
+}
+
+/* ----- Card: the workhorse glass panel, with a henna corner bloom ------- */
 .card {
   position: relative;
   background: var(--glass-bg);
@@ -210,15 +249,26 @@
   overflow: hidden;
 }
 .card::after {
-  content: "";
-  position: absolute;
-  right: -60px;
-  bottom: -60px;
-  width: 190px;
-  height: 190px;
-  background: var(--pattern-henna) center / contain no-repeat;
-  opacity: 0.07;
-  pointer-events: none;
+  --motif-size: 500px;
+  --motif-pos: right -120px bottom -130px;
+  --motif-opacity: 0.85;
+}
+.lesson-card::after {
+  --motif-size: 380px;
+  --motif-pos: right -110px top -110px;
+  --motif-fill: linear-gradient(140deg, var(--color-primary), var(--color-accent));
+  --motif-opacity: 0.8;
+}
+/* A couple of cards carry their own hue so the set doesn't read uniform. */
+.resume-card {
+  --motif-fill: linear-gradient(140deg, var(--color-primary), var(--color-warning));
+  --motif-opacity: 0.9;
+}
+.stat-tile.card {
+  --motif-size: 360px;
+  --motif-pos: right -90px bottom -110px;
+  --motif-fill: linear-gradient(140deg, var(--color-accent), #7f9cff);
+  --motif-opacity: 0.75;
 }
 
 .card + .card {
@@ -239,11 +289,31 @@
   font-weight: 650;
   letter-spacing: 0.01em;
   cursor: pointer;
+  overflow: hidden;
   transition: transform 0.15s ease, box-shadow 0.2s ease, background-color 0.15s ease,
     filter 0.15s ease;
 }
 .button:active {
   transform: translateY(1px) scale(0.99);
+}
+/* Buttons are small, so they use the compact 8-petal henna motif (the big
+   fractal vine just reads as noise at this size) tucked into the trailing
+   corner, behind the label (::before paints before the button's text). */
+.button::before {
+  --pattern-motif: var(--pattern-henna);
+  --motif-size: 150px;
+  --motif-pos: right -30px top -52px;
+}
+.button--primary {
+  --motif-fill: #5a2c0f;
+  --motif-opacity: 0.4;
+}
+.button--secondary {
+  --motif-fill: var(--color-accent);
+  --motif-opacity: 0.75;
+}
+.button--ghost::before {
+  display: none;
 }
 
 .button--primary {
