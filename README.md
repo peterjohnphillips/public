@@ -49,9 +49,10 @@ Or run them individually:
 ## Static single-file build (GitHub Pages)
 
 The full-stack app above needs Python. There is also a **zero-backend build**:
-one self-contained `docs/index.html` that runs entirely in the browser, with
-the FastAPI surface reimplemented in-process (`frontend/src/local/`) against
-`localStorage`, and the parsed content baked in at build time.
+one self-contained `index.html` at the repo root that runs entirely in the
+browser, with the FastAPI surface reimplemented in-process
+(`frontend/src/local/`) against `localStorage`, and the parsed content baked
+in at build time.
 
 ```powershell
 .\build-pages.ps1
@@ -59,8 +60,8 @@ the FastAPI surface reimplemented in-process (`frontend/src/local/`) against
 
 That runs the real content parser (`scripts/build_content.py` →
 `frontend/src/generated/content.json`) and bundles everything into a single
-`docs/index.html`. Commit it and, in the repo's **Settings → Pages**, choose
-*Deploy from a branch* → `main` / `/docs`.
+`index.html`. Commit it; GitHub Pages serves it from the branch root
+(**Settings → Pages** → *Deploy from a branch* → `main` / `/ (root)`).
 
 Caveats of the static build: progress lives in the browser it was created in
 (a cleared browser loses it — there is no server to be the durable record),

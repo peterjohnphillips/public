@@ -31,9 +31,9 @@ export default defineConfig({
   base: "./",
   plugins: [react(), viteSingleFile(), inlineScriptToBodyEnd],
   build: {
-    // GitHub Pages ("Deploy from branch" → /docs). Not emptied: docs/ also holds
-    // the hand-written content-authoring-guide.md.
-    outDir: "../docs",
+    // GitHub Pages serves this repo from the branch root, so the one build
+    // artifact is <repo>/index.html. Not emptied — the root holds the source.
+    outDir: "..",
     emptyOutDir: false,
     assetsInlineLimit: 100_000_000,
     cssCodeSplit: false,

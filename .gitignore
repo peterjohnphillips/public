@@ -29,9 +29,7 @@ Thumbs.db
 # TS build cache
 *.tsbuildinfo
 
-# Static Pages build: only docs/index.html is tracked; everything else under
-# docs/ is either build output or generated. (content-authoring-guide.md is a
-# hand-written source doc and stays tracked.)
-/docs/*
-!/docs/index.html
-!/docs/content-authoring-guide.md
+# Static Pages build: the one artifact is /index.html, served from the branch
+# root. It is committed, as is frontend/src/generated/content.json (derived
+# from content/ by scripts/build_content.py, but checked in so `npm run build`
+# works without the Python step).
