@@ -58,9 +58,9 @@ the FastAPI surface reimplemented in-process (`frontend/src/local/`) against
 ```
 
 That runs the real content parser (`scripts/build_content.py` →
-`frontend/src/generated/content.json`) and bundles everything into
-`docs/index.html` (plus `docs/.nojekyll`). Commit `docs/` and, in the repo's
-**Settings → Pages**, choose *Deploy from a branch* → `main` / `/docs`.
+`frontend/src/generated/content.json`) and bundles everything into a single
+`docs/index.html`. Commit it and, in the repo's **Settings → Pages**, choose
+*Deploy from a branch* → `main` / `/docs`.
 
 Caveats of the static build: progress lives in the browser it was created in
 (a cleared browser loses it — there is no server to be the durable record),

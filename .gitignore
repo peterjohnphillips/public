@@ -28,3 +28,10 @@ Thumbs.db
 
 # TS build cache
 *.tsbuildinfo
+
+# Static Pages build: only docs/index.html is tracked; everything else under
+# docs/ is either build output or generated. (content-authoring-guide.md is a
+# hand-written source doc and stays tracked.)
+/docs/*
+!/docs/index.html
+!/docs/content-authoring-guide.md

@@ -24,9 +24,6 @@ const inlineScriptToBodyEnd = {
       });
       file.source = html.replace("</body>", `${scripts.join("\n")}\n</body>`);
     }
-    // GitHub Pages runs Jekyll by default, which would ignore nothing here but
-    // costs a build step; opt out so the file is served verbatim.
-    this.emitFile({ type: "asset", fileName: ".nojekyll", source: "" });
   },
 };
 
