@@ -1,8 +1,7 @@
 # Builds the single-file static app into docs/ for GitHub Pages.
 #
-#   1. Re-parse content/ into frontend/src/generated/content.json (same parser
-#      the FastAPI app uses).
-#   2. Bundle the React app + inlined local backend into one docs/index.html.
+#   1. Re-parse content/ into frontend/src/generated/content.json.
+#   2. Bundle the React app + inlined in-browser backend into one docs/index.html.
 #
 # GitHub Pages: Settings -> Pages -> Deploy from branch -> main / docs.
 

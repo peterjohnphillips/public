@@ -1,9 +1,8 @@
 """Parse the content/ tree into a single JSON blob the static frontend embeds.
 
-This is the browser build's substitute for the FastAPI content loader: it runs
-the exact same parser (`backend/app/content`), so the single-file GitHub Pages
-build reads identical structures to the local full-stack app. Re-run this
-whenever anything under content/ changes, then rebuild the frontend.
+Runs the Markdown parser in `backend/app/content` over `content/` and writes
+`frontend/src/generated/content.json`. Re-run this whenever anything under
+content/ changes, then rebuild (or restart) the frontend.
 """
 
 from __future__ import annotations

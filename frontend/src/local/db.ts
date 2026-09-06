@@ -114,13 +114,23 @@ function read<K extends keyof Schema>(table: K): Schema[K] {
   }
 }
 
+let writeFailed = false;
+
+/** True once a write to the local "database" has failed. There is no server
+ * copy of any of these tables, so a failure here means the SRS state, session,
+ * or streak update it was trying to save is simply gone. */
+export function hasDbWriteFailed(): boolean {
+  return writeFailed;
+}
+
 function write<K extends keyof Schema>(table: K, value: Schema[K]): void {
   try {
     window.localStorage.setItem(PREFIX + table, JSON.stringify(value));
   } catch {
     // Storage full or blocked: the in-memory result of this request still
-    // returns; the write is simply lost, same failure mode as the real
-    // backend being unreachable.
+    // returns; the write is simply lost. Surfaced via hasDbWriteFailed() so
+    // the app can warn rather than silently losing progress.
+    writeFailed = true;
   }
 }
 

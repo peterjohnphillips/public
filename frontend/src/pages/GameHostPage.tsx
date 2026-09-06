@@ -1,10 +1,12 @@
-import { useParams, useSearchParams, Link } from "react-router-dom";
+import { useParams, useSearchParams, useNavigate, Link } from "react-router-dom";
 import { getGameMode } from "../components/games/registry";
+import { GameContainerProvider } from "../components/games/GameContainerContext";
 import { Button } from "../components/ui/Button";
 
 export function GameHostPage() {
   const { mode } = useParams<{ mode: string }>();
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
   const lessonId = searchParams.get("lesson") || null;
 
   const gameMode = mode ? getGameMode(mode) : undefined;
@@ -32,10 +34,15 @@ export function GameHostPage() {
   }
 
   const Component = gameMode.component;
+  const onContinue = () => navigate(lessonId ? `/lessons/${lessonId}` : "/");
+  const continueLabel = lessonId ? "Back to lesson" : "Done";
+
   return (
     <div>
       <h1 className="page-title">{gameMode.label}</h1>
-      <Component lessonId={lessonId} />
+      <GameContainerProvider value={{ onContinue, continueLabel }}>
+        <Component lessonId={lessonId} />
+      </GameContainerProvider>
     </div>
   );
 }

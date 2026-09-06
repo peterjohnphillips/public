@@ -20,12 +20,32 @@ export function readJSON<T>(key: string): T | null {
   }
 }
 
+/** Reads a record and discards it if its stored `version` doesn't match -
+ * the documented policy for every shape in persistence/schema.ts is to
+ * throw away a stale format rather than migrate it, since everything kept
+ * here is resume/presentation state, not the durable record. */
+export function readVersioned<T extends { version: number }>(key: string, version: T["version"]): T | null {
+  const record = readJSON<T>(key);
+  if (!record || record.version !== version) return null;
+  return record;
+}
+
+let writeFailed = false;
+
+/** True once a write to local storage has failed - a persistent quota/access
+ * error means whatever this call was trying to save (an answer, a streak,
+ * SRS state) is silently gone, and there is no server copy to fall back on. */
+export function hasStorageWriteFailed(): boolean {
+  return writeFailed;
+}
+
 export function writeJSON<T>(key: string, value: T): boolean {
   try {
     window.localStorage.setItem(key, JSON.stringify(value));
     return true;
   } catch (error) {
     if (!isQuotaOrAccessError(error)) throw error;
+    writeFailed = true;
     return false;
   }
 }

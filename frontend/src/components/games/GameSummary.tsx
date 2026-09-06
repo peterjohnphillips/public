@@ -1,9 +1,12 @@
-import { Link } from "react-router-dom";
 import { Button } from "../ui/Button";
+import { useGameContainer } from "./GameContainerContext";
+import { useNavigate } from "react-router-dom";
 import type { SessionFinishResponse } from "../../types/content";
 
-export function GameSummary({ result, backTo = "/daily" }: { result: SessionFinishResponse; backTo?: string }) {
+export function GameSummary({ result }: { result: SessionFinishResponse }) {
   const pct = result.score !== null ? Math.round(result.score * 100) : null;
+  const { onContinue, continueLabel } = useGameContainer();
+  const navigate = useNavigate();
   return (
     <div className="card session-summary">
       <p style={{ color: "var(--color-text-muted)", marginBottom: 4 }}>Session complete</p>
@@ -14,12 +17,12 @@ export function GameSummary({ result, backTo = "/daily" }: { result: SessionFini
       </p>
       {result.streak_days > 0 && <p>Streak: {result.streak_days} day{result.streak_days === 1 ? "" : "s"}</p>}
       <div className="button-row" style={{ justifyContent: "center", marginTop: "var(--space-4)" }}>
-        <Link to={backTo}>
-          <Button variant="primary">Continue</Button>
-        </Link>
-        <Link to="/progress">
-          <Button variant="secondary">View progress</Button>
-        </Link>
+        <Button variant="primary" onClick={onContinue}>
+          {continueLabel}
+        </Button>
+        <Button variant="secondary" onClick={() => navigate("/progress")}>
+          View progress
+        </Button>
       </div>
     </div>
   );

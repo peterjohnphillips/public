@@ -105,6 +105,14 @@ export interface CharacterItem {
   source_lesson_id: string | null;
 }
 
+export interface LessonMilestone {
+  key: "opened" | "vocab" | "listening" | "practice";
+  label: string;
+  done: boolean;
+  /** Human-readable partial progress, e.g. "9 / 12 words". */
+  detail: string | null;
+}
+
 export interface LessonSummary {
   id: string;
   title: string;
@@ -125,6 +133,10 @@ export interface LessonSummary {
   progress_status: "not_started" | "in_progress" | "completed";
   times_practiced: number;
   due_vocab_count: number;
+  /** Fraction of applicable milestones completed (0-1). Drives the real
+   * progress ring, replacing the old not_started/in_progress/completed guess. */
+  progress_fraction: number;
+  milestones: LessonMilestone[];
 }
 
 export interface Lesson extends LessonSummary {
@@ -217,6 +229,7 @@ export interface ProgressSummary {
   vocab_total: number;
   vocab_introduced: number;
   lessons_completed: number;
+  lessons_in_progress: number;
   lessons_total: number;
   lessons_with_content: number;
   curriculum_day: number;

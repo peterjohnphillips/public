@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { useProgressSummary } from "../api/progress";
 import { useLessons } from "../api/lessons";
 import { activitiesForPhase, type DailyActivity } from "../dailySessionConfig";
 import { getGameMode } from "../components/games/registry";
 import { readDailySession, startDailySession, advanceDailySession } from "../persistence/dailySessionStore";
+import { GameContainerProvider } from "../components/games/GameContainerContext";
 import { Button } from "../components/ui/Button";
 import { ProgressBar } from "../components/ui/ProgressBar";
 
@@ -38,6 +40,17 @@ export function DailySession() {
       <div className="card session-summary">
         <p style={{ fontSize: "1.2rem", fontWeight: 600 }}>Today's session is complete.</p>
         <p style={{ color: "var(--color-text-muted)" }}>Come back tomorrow, or review anything still due.</p>
+        <div className="button-row" style={{ marginTop: "var(--space-4)" }}>
+          <Link to="/">
+            <Button variant="primary">Back to home</Button>
+          </Link>
+          <Link to="/progress">
+            <Button variant="secondary">View progress</Button>
+          </Link>
+          <Link to="/games/flashcards">
+            <Button variant="secondary">Practise due vocab</Button>
+          </Link>
+        </div>
       </div>
     );
   }
@@ -54,6 +67,7 @@ export function DailySession() {
   if (!gameMode) return <p>Unknown activity "{activity.mode}".</p>;
 
   const Component = gameMode.component;
+  const isLastActivity = activityIndex === activities.length - 1;
 
   return (
     <div>
@@ -63,7 +77,9 @@ export function DailySession() {
         label={`Activity ${activityIndex + 1} of ${activities.length}: ${gameMode.label}`}
       />
       <div style={{ margin: "var(--space-4) 0" }}>
-        <Component lessonId={lessonId} />
+        <GameContainerProvider value={{ onContinue: next, continueLabel: isLastActivity ? "Finish session" : "Next activity" }}>
+          <Component key={activityIndex} lessonId={lessonId} />
+        </GameContainerProvider>
       </div>
       <Button variant="secondary" onClick={next}>
         Skip to next activity

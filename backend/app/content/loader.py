@@ -8,7 +8,6 @@ bugs from incremental invalidation.
 from __future__ import annotations
 
 import logging
-import threading
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -137,24 +136,3 @@ def load_content(lessons_dir: Path, vocab_dir: Path) -> ContentStore:
         len(store.errors),
     )
     return store
-
-
-class ContentCache:
-    """Thread-safe holder for the current store, swapped atomically on reload."""
-
-    def __init__(self, lessons_dir: Path, vocab_dir: Path) -> None:
-        self._lessons_dir = lessons_dir
-        self._vocab_dir = vocab_dir
-        self._lock = threading.Lock()
-        self._store = load_content(lessons_dir, vocab_dir)
-
-    @property
-    def store(self) -> ContentStore:
-        with self._lock:
-            return self._store
-
-    def reload(self) -> ContentStore:
-        fresh = load_content(self._lessons_dir, self._vocab_dir)
-        with self._lock:
-            self._store = fresh
-        return fresh

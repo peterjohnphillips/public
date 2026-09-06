@@ -5,67 +5,78 @@ conversational Nepali: spaced-repetition vocabulary, a broad catalogue of
 practice games, Devanagari script drills, and browser text-to-speech that can
 read a full paragraph of Nepali aloud with the current sentence highlighted.
 
-See `.claude/plans/target-3-4-weeks-joyful-goblet.md` (or wherever this
-session's plan file landed) for the full design. The short version:
+See `CLAUDE.md` for the design principles. The short version:
 
-- **Backend**: FastAPI + SQLite (via SQLModel). Lesson content lives as plain
-  Markdown files in `content/`, not in the database - the database only holds
-  scheduling state, session history, and progress.
-- **Frontend**: Vite + React + TypeScript. Everything the user does is
-  mirrored into browser local storage as it happens, so closing a tab
-  mid-passage or mid-game loses nothing.
+- **Runtime**: a single static page (Vite + React + TypeScript) that serves
+  its own API in-browser (`frontend/src/local/`) against `localStorage` —
+  there is no server in the loop whether you run `npm run dev`, open the
+  built `index.html` from disk, or host it on GitHub Pages.
+- **Content**: Markdown files in `content/`, parsed by
+  `backend/app/content` (a small standalone Markdown parser, the only Python
+  left in the repo) into `frontend/src/generated/content.json` at build time
+  (`scripts/build_content.py`). Re-run that script after editing content; the
+  frontend then picks up the change like any other file.
+- **Progress**: everything lives in two `localStorage` namespaces —
+  `nepali:db:v1:*` (SRS scheduling, sessions, streaks, lesson progress: the
+  durable record) and `nepali:v1:*` (scroll/audio position, in-flight
+  answers, settings: resume state). There is no server copy, so use
+  **Progress → Export progress** before clearing site data or moving to a
+  different browser or device.
 - **Text-to-speech**: entirely in the browser (`window.speechSynthesis`), no
   cloud service or API key. See `frontend/src/tts/` for the queued-utterance
   approach that works around Chrome's long-utterance truncation bug.
 
+`backend/` contains only the Markdown content parser
+(`backend/app/content`) and its tests. The shipped app has no server and no
+Python runtime dependency — `frontend/src/api/client.ts` always routes to the
+in-browser implementation in `frontend/src/local/`.
+
 ## First-time setup
 
 ```powershell
-python -m venv .venv
-.venv\Scripts\pip install -r backend\requirements.txt
-
 cd frontend
 npm install
 cd ..
+
+# Only needed to run scripts/build_content.py or the content-parser tests:
+python -m venv .venv
+.venv\Scripts\pip install -r backend\requirements.txt
 ```
 
 ## Running it
 
 ```powershell
-.\run-all.ps1
+cd frontend
+npm run dev
 ```
 
-This opens two windows: the backend on `http://localhost:8000` and the
-frontend on `http://localhost:5173`. Open the frontend URL - the Vite dev
-server proxies `/api` to the backend, so there's nothing else to configure.
+Open `http://localhost:5173`. The app runs fully client-side — no backend
+process is required.
 
-Or run them individually:
+If you've edited anything under `content/`, regenerate the embedded content
+first (Vite then picks up the change automatically):
 
 ```powershell
-.\backend\run.ps1    # http://localhost:8000, auto-reloads on code AND content changes
-.\frontend\run.ps1   # http://localhost:5173
+python scripts/build_content.py
 ```
 
 ## Static single-file build (GitHub Pages)
-
-The full-stack app above needs Python. There is also a **zero-backend build**:
-one self-contained `index.html` at the repo root that runs entirely in the
-browser, with the FastAPI surface reimplemented in-process
-(`frontend/src/local/`) against `localStorage`, and the parsed content baked
-in at build time.
 
 ```powershell
 .\build-pages.ps1
 ```
 
-That runs the real content parser (`scripts/build_content.py` →
-`frontend/src/generated/content.json`) and bundles everything into a single
-`index.html`. Commit it; GitHub Pages serves it from the branch root
-(**Settings → Pages** → *Deploy from a branch* → `main` / `/ (root)`).
+This runs `scripts/build_content.py` →
+`frontend/src/generated/content.json` and bundles the whole app into one
+self-contained `index.html` at the repo root (no separate JS/CSS requests).
+Commit it; GitHub Pages serves it from the branch root
+(**Settings → Pages** → *Deploy from a branch* → `main` / `/ (root)`). It
+behaves identically to `npm run dev` — same in-browser API, same
+`localStorage` — just bundled as one file instead of served by Vite.
 
-Caveats of the static build: progress lives in the browser it was created in
-(a cleared browser loses it — there is no server to be the durable record),
-and it is single-device. The local full-stack setup is unchanged.
+Caveat: progress lives in the browser it was created in — a cleared browser
+loses it, and it is single-device by nature. Export a backup from the
+Progress page before either.
 
 ## Writing lesson content
 
@@ -74,7 +85,8 @@ Lesson content is not part of this build - see
 worked examples in `content/lessons/` (day01, day04, week02, and the reading
 passage). Every other file under `content/lessons/` is a stub with the
 frontmatter and section headers already in place - fill those in rather than
-creating new files.
+creating new files. Remember to re-run `python scripts/build_content.py`
+after editing — it is not watched automatically in the current app.
 
 ## Tests
 
@@ -83,9 +95,10 @@ cd backend
 ..\.venv\Scripts\python.exe -m pytest
 ```
 
-Covers the content parser (against the real files in `content/`), the SM-2
-scheduling algorithm's edge cases, and the API end to end (session lifecycle,
-SRS application, idempotent answer/session replay, progress stats).
+Covers the content parser against the real files in `content/`, so a format
+change that breaks authoring shows up here rather than as an empty game
+later.
 
-There's no automated test for text-to-speech - that needs a human ear. See
-the verification section of the plan file for what to listen for.
+There's no automated test for the frontend or for text-to-speech - TTS needs
+a human ear; listen for correct sentence-by-sentence playback with no
+truncation or dropped audio after touching `frontend/src/tts/`.

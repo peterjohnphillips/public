@@ -1,9 +1,11 @@
 # Content Authoring Guide
 
 Lesson content lives entirely in `content/lessons/*.md` and `content/vocab/*.md`.
-There is no database to edit and no build step to run - save the file, and the
-backend's dev server picks it up automatically (it watches the `content/`
-directory and reparses on change).
+There is no database to edit. After each edit, run
+`python scripts/build_content.py` to regenerate
+`frontend/src/generated/content.json` — the JSON module the app embeds. Vite's
+file watcher picks up that change like any other, so `npm run dev` reloads
+with the new content.
 
 Four fully worked examples exist to copy from:
 
@@ -142,11 +144,10 @@ introduced_week: 2
 ---
 ```
 
-## What happens when you save
+## What happens when you build
 
-The backend's dev server watches `content/` and reparses automatically. If a
-file fails to parse, the error names the exact file and line - check the
-terminal running `backend/run.ps1`, or hit `GET /api/content/errors`. Unknown
-section headers are tolerated (kept as freeform notes); unknown category or
-skill-type values are not, and will fail loudly rather than silently
-dropping content.
+`python scripts/build_content.py` reparses every file and rewrites
+`frontend/src/generated/content.json`. If a file fails to parse, the error
+names the exact file and line and the build stops. Unknown section headers
+are tolerated (kept as freeform notes); unknown category or skill-type values
+are not, and will fail loudly rather than silently dropping content.

@@ -59,15 +59,3 @@ export const api = {
   put: <T>(path: string, body?: unknown) =>
     request<T>(path, { method: "PUT", body: body !== undefined ? JSON.stringify(body) : undefined }),
 };
-
-/** True once a request has succeeded at least once this session. Cheap "is the
- * backend up" signal for the header banner, without a dedicated poller. */
-export let backendReachable = true;
-
-export function markBackendUnreachable() {
-  backendReachable = false;
-}
-
-export function markBackendReachable() {
-  backendReachable = true;
-}

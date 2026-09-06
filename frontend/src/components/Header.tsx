@@ -1,23 +1,24 @@
 import { NavLink } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useProgressSummary } from "../api/progress";
+import { isStorageHealthy } from "../persistence/storageHealth";
 
 /** A persistent strip showing current streak, vocabulary due today, and
  * minutes practised today. Reads from the cached snapshot (via
  * useProgressSummary's placeholderData) so it never flickers on navigation. */
 export function Header() {
   const { data: summary } = useProgressSummary();
-  const [offline, setOffline] = useState(!navigator.onLine);
+  const [storageOk, setStorageOk] = useState(true);
 
   useEffect(() => {
-    const onOffline = () => setOffline(true);
-    const onOnline = () => setOffline(false);
-    window.addEventListener("offline", onOffline);
-    window.addEventListener("online", onOnline);
-    return () => {
-      window.removeEventListener("offline", onOffline);
-      window.removeEventListener("online", onOnline);
-    };
+    // There is no server, so "offline" isn't a meaningful state here - the
+    // only real failure mode left is local storage itself refusing a write
+    // (a full quota, a browser blocking site data). Polled rather than
+    // event-driven since there's no storage-write event to listen for.
+    const check = () => setStorageOk(isStorageHealthy());
+    check();
+    const interval = setInterval(check, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   return (
@@ -37,7 +38,7 @@ export function Header() {
         </NavLink>
       </nav>
       <div className="app-header__stats">
-        {offline && <span className="app-header__offline">Backend unreachable - answers will sync later</span>}
+        {!storageOk && <span className="app-header__offline">Storage is full or blocked - progress isn't saving</span>}
         <span className="app-header__stat">
           Streak <strong>{summary?.streak_days ?? 0}d</strong>
         </span>

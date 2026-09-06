@@ -1,12 +1,11 @@
 import { useEffect, useState } from "react";
-import { readJSON, writeJSON } from "./localStore";
+import { readVersioned, writeJSON } from "./localStore";
 import { DEFAULT_SETTINGS, STORAGE_KEYS, type SettingsRecord } from "./schema";
 import { api } from "../api/client";
 
 export function readSettings(): SettingsRecord {
-  const stored = readJSON<SettingsRecord>(STORAGE_KEYS.settings);
-  if (stored?.version === 1) return { ...DEFAULT_SETTINGS, ...stored };
-  return DEFAULT_SETTINGS;
+  const stored = readVersioned<SettingsRecord>(STORAGE_KEYS.settings, 1);
+  return stored ? { ...DEFAULT_SETTINGS, ...stored } : DEFAULT_SETTINGS;
 }
 
 function writeSettings(settings: SettingsRecord): void {

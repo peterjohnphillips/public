@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useLessons } from "../api/lessons";
+import { ProgressRing } from "../components/ui/ProgressRing";
 
 export function LessonList() {
   const { data: lessons, isLoading } = useLessons();
@@ -12,6 +13,7 @@ export function LessonList() {
       <div className="lesson-list">
         {lessons?.map((lesson) => (
           <Link key={lesson.id} to={`/lessons/${lesson.id}`} className="lesson-card">
+            <ProgressRing fraction={lesson.progress_fraction} size={24} strokeWidth={3} />
             <div className="lesson-card__meta">
               <p className="lesson-card__title">{lesson.title}</p>
               <div className="lesson-card__sub">

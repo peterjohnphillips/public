@@ -5,12 +5,12 @@
  * binary flag.
  */
 
-import { flushDebounced, listKeys, readJSON, remove, writeJSONDebounced } from "./localStore";
+import { flushDebounced, listKeys, readVersioned, remove, writeJSONDebounced } from "./localStore";
 import { STORAGE_KEYS, type AudioRecord } from "./schema";
 import { api } from "../api/client";
 
 export function readAudioRecord(lessonId: string): AudioRecord | null {
-  return readJSON<AudioRecord>(STORAGE_KEYS.audio(lessonId));
+  return readVersioned<AudioRecord>(STORAGE_KEYS.audio(lessonId), 1);
 }
 
 export function writeAudioRecord(record: AudioRecord, opts: { immediate?: boolean } = {}): void {

@@ -1,4 +1,4 @@
-import { readJSON, remove, writeJSON } from "./localStore";
+import { readVersioned, remove, writeJSON } from "./localStore";
 import { STORAGE_KEYS, type DailySessionRecord } from "./schema";
 
 function todayKey(): string {
@@ -6,7 +6,7 @@ function todayKey(): string {
 }
 
 export function readDailySession(): DailySessionRecord | null {
-  const record = readJSON<DailySessionRecord>(STORAGE_KEYS.dailySession);
+  const record = readVersioned<DailySessionRecord>(STORAGE_KEYS.dailySession, 1);
   if (!record || record.dateKey !== todayKey()) return null;
   return record;
 }

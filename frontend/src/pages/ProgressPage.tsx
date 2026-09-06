@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import {
   useCurriculumPhases,
   useGameModeStats,
@@ -9,6 +10,8 @@ import {
 } from "../api/progress";
 import { StreakCalendar } from "../components/progress/StreakCalendar";
 import { MasteryBar } from "../components/progress/MasteryBar";
+import { Button } from "../components/ui/Button";
+import { BackupImportError, downloadBackup, importBackup } from "../persistence/backup";
 import { Link } from "react-router-dom";
 
 export function ProgressPage() {
@@ -19,6 +22,23 @@ export function ProgressPage() {
   const { data: weakest } = useWeakestItems(20);
   const { data: listening } = useListeningStats();
   const { data: phases } = useCurriculumPhases();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importMessage, setImportMessage] = useState<string | null>(null);
+
+  const handleImportFile = async (file: File) => {
+    setImportMessage(null);
+    try {
+      const text = await file.text();
+      const restored = importBackup(text);
+      // A full reload is the simplest way to get every React Query cache and
+      // in-memory flag (SRS store, local db) to pick up the restored data
+      // consistently, rather than trying to invalidate each one by hand.
+      window.alert(`Restored ${restored} record${restored === 1 ? "" : "s"}. The page will now reload.`);
+      window.location.reload();
+    } catch (error) {
+      setImportMessage(error instanceof BackupImportError ? error.message : "Could not read that file.");
+    }
+  };
 
   return (
     <div>
@@ -114,6 +134,34 @@ export function ProgressPage() {
             <div className="stat-tile__label">Passages completed</div>
           </div>
         </div>
+      </div>
+
+      <div className="card">
+        <h2 style={{ marginTop: 0 }}>Backup</h2>
+        <p style={{ color: "var(--color-text-muted)", fontSize: "0.85rem" }}>
+          Everything - SRS progress, streaks, completed lessons - lives only in this browser. Export a backup
+          before clearing site data or switching devices, and import it to restore.
+        </p>
+        <div className="button-row">
+          <Button variant="secondary" onClick={downloadBackup}>
+            Export progress
+          </Button>
+          <Button variant="secondary" onClick={() => fileInputRef.current?.click()}>
+            Import progress
+          </Button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="application/json"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              e.target.value = "";
+              if (file) void handleImportFile(file);
+            }}
+          />
+        </div>
+        {importMessage && <p style={{ color: "var(--color-danger)", fontSize: "0.85rem" }}>{importMessage}</p>}
       </div>
     </div>
   );

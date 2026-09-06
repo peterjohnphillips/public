@@ -69,7 +69,10 @@ export function Home() {
           <div className="stat-tile__value">
             {summary?.lessons_completed ?? 0}/{summary?.lessons_with_content ?? 0}
           </div>
-          <div className="stat-tile__label">Lessons completed</div>
+          <div className="stat-tile__label">
+            Lessons completed
+            {(summary?.lessons_in_progress ?? 0) > 0 && ` (${summary?.lessons_in_progress} in progress)`}
+          </div>
         </div>
       </div>
     </div>

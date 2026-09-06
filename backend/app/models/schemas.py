@@ -1,13 +1,13 @@
-"""Pydantic models: parsed content structures and API request/response shapes.
+"""Pydantic models for the parsed content structures.
 
-The content models here mirror the markdown schema documented in
-`docs/content-authoring-guide.md` one-for-one, and are returned directly by the
-routers, so the frontend types in `frontend/src/types/content.ts` mirror these.
+These mirror the markdown schema documented in
+`docs/content-authoring-guide.md` one-for-one. `scripts/build_content.py`
+serialises them into `frontend/src/generated/content.json`, and the frontend
+types in `frontend/src/types/content.ts` mirror these.
 """
 
 from __future__ import annotations
 
-from datetime import date, datetime
 from enum import Enum
 
 from pydantic import BaseModel, Field
@@ -45,13 +45,6 @@ class ContentStatus(str, Enum):
     STUB = "stub"
     SAMPLE = "sample"
     FINAL = "final"
-
-
-class MasteryBucket(str, Enum):
-    NEW = "new"
-    LEARNING = "learning"
-    YOUNG = "young"
-    MATURE = "mature"
 
 
 # --------------------------------------------------------------------------
@@ -170,179 +163,3 @@ class Lesson(LessonSummary):
     is_dialogue: bool = False
     notes_markdown: str | None = None
     source_path: str | None = None
-
-
-# --------------------------------------------------------------------------
-# Vocab + SRS
-# --------------------------------------------------------------------------
-
-class VocabProgressOut(BaseModel):
-    ease_factor: float
-    interval_days: int
-    repetitions: int
-    due_date: date
-    last_reviewed_at: datetime | None = None
-    total_reviews: int
-    total_correct: int
-    bucket: MasteryBucket
-    is_due: bool
-
-
-class VocabItemOut(VocabItem):
-    progress: VocabProgressOut | None = None
-
-
-# --------------------------------------------------------------------------
-# Game sessions
-# --------------------------------------------------------------------------
-
-class SessionStartIn(BaseModel):
-    game_mode: str
-    lesson_id: str | None = None
-    client_session_key: str | None = Field(
-        default=None,
-        description="Client-generated idempotency key, so a resumed in-flight "
-        "session reattaches to its existing row instead of creating a duplicate.",
-    )
-
-
-class SessionStartOut(BaseModel):
-    session_id: int
-    game_mode: str
-    lesson_id: str | None = None
-    resumed: bool = False
-    answered_item_refs: list[str] = Field(default_factory=list)
-
-
-class AnswerIn(BaseModel):
-    item_ref: str
-    was_correct: bool
-    quality: int | None = Field(default=None, ge=0, le=5)
-    response_time_ms: int | None = None
-    user_answer: str | None = None
-    client_answer_key: str | None = Field(
-        default=None,
-        description="Idempotency key so an outbox replay does not double-count.",
-    )
-
-
-class AnswerOut(BaseModel):
-    recorded: bool
-    duplicate: bool = False
-    srs_applied: bool = False
-    next_due_date: date | None = None
-    next_interval_days: int | None = None
-    ease_factor: float | None = None
-
-
-class SessionFinishOut(BaseModel):
-    session_id: int
-    score: float | None
-    total_items: int
-    correct_items: int
-    duration_seconds: int | None
-    streak_days: int
-
-
-class SessionItemOut(BaseModel):
-    item_ref: str
-    was_correct: bool
-    user_answer: str | None = None
-    response_time_ms: int | None = None
-    answered_at: datetime
-
-
-class SessionOut(BaseModel):
-    id: int
-    game_mode: str
-    lesson_id: str | None
-    started_at: datetime
-    completed_at: datetime | None
-    score: float | None
-    total_items: int
-    correct_items: int
-    duration_seconds: int | None
-    items: list[SessionItemOut] = Field(default_factory=list)
-
-
-# --------------------------------------------------------------------------
-# Progress
-# --------------------------------------------------------------------------
-
-class ProgressSummary(BaseModel):
-    streak_days: int
-    longest_streak_days: int
-    practiced_today: bool
-    minutes_today: int
-    sessions_today: int
-    vocab_due_count: int
-    vocab_total: int
-    vocab_introduced: int
-    lessons_completed: int
-    lessons_total: int
-    lessons_with_content: int
-    curriculum_day: int
-    curriculum_week: int
-    week_focus: str
-    sessions_this_week: int
-    content_is_placeholder: bool
-
-
-class StreakDay(BaseModel):
-    date: date
-    minutes_active: int
-    sessions_completed: int
-    day_curriculum_index: int | None = None
-
-
-class CategoryMastery(BaseModel):
-    category: VocabCategory
-    new: int
-    learning: int
-    young: int
-    mature: int
-    total: int
-
-
-class VocabMastery(BaseModel):
-    categories: list[CategoryMastery]
-    totals: CategoryMastery | None = None
-    milestone_target: int
-    milestone_label: str
-
-
-class GameModeStat(BaseModel):
-    game_mode: str
-    sessions: int
-    items: int
-    correct: int
-    accuracy: float | None
-    last_played_at: datetime | None
-
-
-class WeakItem(BaseModel):
-    vocab_id: str
-    devanagari: str
-    romanized: str
-    english: str
-    category: VocabCategory
-    ease_factor: float
-    total_reviews: int
-    total_correct: int
-    accuracy: float | None
-
-
-class ListeningStats(BaseModel):
-    spans_listened: int
-    minutes_listened: int
-    passages_completed: int
-    lessons_with_audio_progress: int
-
-
-class AudioProgressIn(BaseModel):
-    """Mirror of the client's local audio record, so listening time survives a cleared browser."""
-
-    lesson_id: str
-    span_ids_listened: list[str] = Field(default_factory=list)
-    seconds_listened: int = 0
-    completed: bool = False

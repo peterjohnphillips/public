@@ -90,6 +90,15 @@ function recordActivity(opts: { minutes?: number; sessions?: number; day?: strin
     row.minutes_active += Math.max(0, opts.minutes ?? 0);
     row.sessions_completed += Math.max(0, opts.sessions ?? 0);
     rows[day] = row;
+    // Backfill which curriculum day this calendar day counted as, now that it
+    // has activity - mirrors progressSummary's dayIndex derivation. Written
+    // once; a day's place in the curriculum doesn't change after the fact.
+    if (row.day_curriculum_index == null) {
+      const practicedDays = Object.values(rows)
+        .filter((r) => r.minutes_active > 0 || r.sessions_completed > 0)
+        .map((r) => r.day);
+      row.day_curriculum_index = currentDay(practicedDays.length, practicedDays.includes(day));
+    }
   });
 }
 
@@ -188,17 +197,112 @@ function dueVocabIds(): Set<string> {
   return new Set(Object.values(rows).filter((r) => r.due_date <= today).map((r) => r.vocab_id));
 }
 
+interface LessonMilestoneOut {
+  key: "opened" | "vocab" | "listening" | "practice";
+  label: string;
+  done: boolean;
+  detail: string | null;
+}
+
+/** Derives real partial-completion from state already recorded elsewhere
+ * (vocab reps, listening progress, lesson-scoped sessions) rather than a
+ * hand-maintained percentage. A milestone is omitted, not marked incomplete,
+ * when it doesn't apply to this lesson (e.g. no passage to listen to). */
+function computeMilestones(
+  lessonId: string,
+  vocab: { id: string }[],
+  turns: unknown[],
+): { fraction: number; milestones: LessonMilestoneOut[] } {
+  const milestones: LessonMilestoneOut[] = [];
+
+  const lessonProgress = get("lessonProgress")[lessonId];
+  milestones.push({
+    key: "opened",
+    label: "Read the lesson",
+    done: lessonProgress?.first_started_at != null,
+    detail: null,
+  });
+
+  if (vocab.length > 0) {
+    const vocabRows = get("vocabProgress");
+    const introduced = vocab.filter((v) => (vocabRows[v.id]?.repetitions ?? 0) > 0).length;
+    milestones.push({
+      key: "vocab",
+      label: "Vocabulary introduced",
+      done: introduced === vocab.length,
+      detail: `${introduced} / ${vocab.length} words`,
+    });
+  }
+
+  if (turns.length > 0) {
+    const audioRow = get("audioProgress")[lessonId];
+    milestones.push({
+      key: "listening",
+      label: "Passage listened",
+      done: !!audioRow?.completed,
+      detail: audioRow ? `${audioRow.spans_listened} spans listened` : "Not started",
+    });
+  }
+
+  const sessions = get("gameSessions").filter((s) => s.lesson_id === lessonId && s.completed_at !== null);
+  milestones.push({
+    key: "practice",
+    label: "Practised a game",
+    done: sessions.length > 0,
+    detail: sessions.length > 0 ? `${sessions.length} session${sessions.length === 1 ? "" : "s"}` : null,
+  });
+
+  const doneCount = milestones.filter((m) => m.done).length;
+  const fraction = milestones.length ? doneCount / milestones.length : 0;
+  return { fraction, milestones };
+}
+
+/** Milestones can complete a lesson (or move it out of not_started) on their
+ * own, without the learner ever pressing "Mark lesson complete" - so opening
+ * the last due vocab card or finishing the last practice game is what
+ * actually flips the status. An explicit complete always wins; this only
+ * ever raises the status, and only writes when there's something to raise. */
+function deriveLessonStatus(
+  lessonId: string,
+  progress: LessonProgressRow | undefined,
+  fraction: number,
+): LessonProgressRow | undefined {
+  if (progress?.status === "completed" || fraction <= 0) return progress;
+
+  return tx("lessonProgress", (rows) => {
+    const row: LessonProgressRow =
+      rows[lessonId] ?? progress ?? { lesson_id: lessonId, status: "not_started", first_started_at: null, completed_at: null, times_practiced: 0 };
+    if (fraction >= 1) {
+      row.status = "completed";
+      if (!row.completed_at) row.completed_at = nowIso();
+    } else if (row.status === "not_started") {
+      row.status = "in_progress";
+    }
+    if (!row.first_started_at) row.first_started_at = nowIso();
+    rows[lessonId] = row;
+    return row;
+  });
+}
+
 function decorateLesson(
   lesson: Record<string, unknown>,
   progress: LessonProgressRow | undefined,
   dueIds: Set<string>,
   full: boolean,
 ): Record<string, unknown> {
+  const lessonId = lesson.id as string;
   const vocab = (lesson.vocab as { id: string }[] | undefined) ?? [];
+  const turns = (lesson.turns as unknown[] | undefined) ?? [];
   const base: Record<string, unknown> = full ? { ...lesson } : pick(lesson, LESSON_SUMMARY_KEYS);
-  base.progress_status = progress?.status ?? "not_started";
-  base.times_practiced = progress?.times_practiced ?? 0;
+
+  const { fraction, milestones } = computeMilestones(lessonId, vocab, turns);
+  const derived = deriveLessonStatus(lessonId, progress, fraction);
+
+  base.progress_status = derived?.status ?? "not_started";
+  base.times_practiced = derived?.times_practiced ?? 0;
   base.due_vocab_count = vocab.filter((v) => dueIds.has(v.id)).length;
+  base.progress_fraction = fraction;
+  base.milestones = milestones;
   return base;
 }
 
@@ -598,11 +702,21 @@ function finishSession(sessionId: number, durationSeconds: number | undefined) {
     s.score = total ? correct / total : null;
     s.duration_seconds = dur;
     s.completed_at = new Date(now).toISOString();
-    return { alreadyFinished, dur, score: s.score };
+    return { alreadyFinished, dur, score: s.score, lessonId: s.lesson_id };
   });
 
   if (!outcome.alreadyFinished) {
     recordActivity({ minutes: Math.round(outcome.dur / 60), sessions: 1 });
+    // A session's lesson_id was previously write-only: stored but never fed
+    // back into lesson progress. Finishing a lesson-scoped game now counts
+    // toward that lesson the same way opening it or completing it manually do.
+    if (outcome.lessonId) {
+      markLessonStarted(outcome.lessonId);
+      tx("lessonProgress", (rows) => {
+        const row = rows[outcome.lessonId as string];
+        if (row) row.times_practiced += 1;
+      });
+    }
   }
 
   const [currentStreak] = streakLengths(activeDays());
@@ -638,6 +752,7 @@ function progressSummary() {
   const lessonRows = get("lessonProgress");
   const realLessons = lessonList().filter((l) => l.status !== "stub");
   const completed = realLessons.filter((l) => lessonRows[l.id as string]?.status === "completed").length;
+  const inProgress = realLessons.filter((l) => lessonRows[l.id as string]?.status === "in_progress").length;
 
   const dayIndex = currentDay(days.length, practicedToday);
   const phase = phaseForDay(dayIndex);
@@ -657,6 +772,7 @@ function progressSummary() {
     vocab_total: knownIds.size,
     vocab_introduced: introduced,
     lessons_completed: completed,
+    lessons_in_progress: inProgress,
     lessons_total: Object.keys(CONTENT.lessons).length,
     lessons_with_content: realLessons.length,
     curriculum_day: dayIndex,

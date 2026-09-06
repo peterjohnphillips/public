@@ -13,6 +13,8 @@ function resumeLink(target: ResumeTarget): string {
       return `/games/${target.record.gameMode}?lesson=${target.record.lessonId ?? ""}`;
     case "audio":
       return `/lessons/${target.record.lessonId}`;
+    case "lesson":
+      return `/lessons/${target.record.lessonId}`;
     case "daily":
       return "/daily";
   }

@@ -5,11 +5,11 @@
  * record rather than one per session.
  */
 
-import { newId, readJSON, remove, writeJSON } from "./localStore";
+import { newId, readVersioned, remove, writeJSON } from "./localStore";
 import { STORAGE_KEYS, type InFlightAnswer, type SessionRecord } from "./schema";
 
 export function readSession(): SessionRecord | null {
-  return readJSON<SessionRecord>(STORAGE_KEYS.session);
+  return readVersioned<SessionRecord>(STORAGE_KEYS.session, 1);
 }
 
 export function startNewSession(gameMode: string, lessonId: string | null, totalQuestions: number): SessionRecord {

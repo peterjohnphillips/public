@@ -45,6 +45,15 @@ export interface SessionRecord {
   updatedAt: string;
 }
 
+export interface LessonPositionRecord {
+  version: 1;
+  lessonId: string;
+  /** Topmost section visible when the user last left the page. */
+  section: "notes" | "patterns" | "vocab" | "passage" | "practice";
+  scrollY: number;
+  updatedAt: string;
+}
+
 export interface DailySessionRecord {
   version: 1;
   dateKey: string; // YYYY-MM-DD, the day this queue was built for
@@ -66,34 +75,6 @@ export interface SettingsRecord {
   theme: "system" | "light" | "dark";
 }
 
-export interface OutboxAnswerEntry {
-  kind: "answer";
-  sessionId: number;
-  payload: {
-    item_ref: string;
-    was_correct: boolean;
-    quality?: number;
-    user_answer?: string;
-    response_time_ms?: number;
-    client_answer_key: string;
-  };
-  createdAt: string;
-}
-
-export interface OutboxFinishEntry {
-  kind: "finish";
-  sessionId: number;
-  duration_seconds?: number;
-  createdAt: string;
-}
-
-export type OutboxEntry = OutboxAnswerEntry | OutboxFinishEntry;
-
-export interface OutboxRecord {
-  version: 1;
-  entries: OutboxEntry[];
-}
-
 export interface SnapshotRecord {
   version: 1;
   progressSummary: unknown;
@@ -113,10 +94,9 @@ export const DEFAULT_SETTINGS: SettingsRecord = {
 /** Keys are namespaced and versioned so a future format change fails safe. */
 export const STORAGE_KEYS = {
   audio: (lessonId: string) => `${STORAGE_PREFIX}audio:${lessonId}`,
+  lesson: (lessonId: string) => `${STORAGE_PREFIX}lesson:${lessonId}`,
   session: `${STORAGE_PREFIX}session`,
   dailySession: `${STORAGE_PREFIX}dailySession`,
   settings: `${STORAGE_PREFIX}settings`,
   snapshot: `${STORAGE_PREFIX}snapshot`,
-  outbox: `${STORAGE_PREFIX}outbox`,
-  audioIndex: `${STORAGE_PREFIX}audioIndex`, // set of lesson ids with an audio record
 } as const;

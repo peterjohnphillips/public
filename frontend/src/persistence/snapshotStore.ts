@@ -4,12 +4,12 @@
  * while the query resolves.
  */
 
-import { readJSON, writeJSON } from "./localStore";
+import { readVersioned, writeJSON } from "./localStore";
 import { STORAGE_KEYS, type SnapshotRecord } from "./schema";
 import type { ProgressSummary } from "../types/content";
 
 export function readSnapshot(): ProgressSummary | null {
-  const record = readJSON<SnapshotRecord>(STORAGE_KEYS.snapshot);
+  const record = readVersioned<SnapshotRecord>(STORAGE_KEYS.snapshot, 1);
   return (record?.progressSummary as ProgressSummary | undefined) ?? null;
 }
 
