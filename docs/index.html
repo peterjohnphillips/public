@@ -1,0 +1,664 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f1220" />
+    <meta name="description" content="Learn 50 basic everyday Nepali sentences with audio. Tap a sentence to hear it spoken, or play it slowly." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Nepali · 50 Everyday Sentences</title>
+    <style>
+      :root {
+        --bg: #0f1220;
+        --bg-soft: #171b2e;
+        --row: #1b2038;
+        --row-active: #27305a;
+        --row-press: #2d376a;
+        --text: #f3f5ff;
+        --muted: #9aa3c7;
+        --accent: #6c8cff;
+        --accent-2: #ffb454;
+        --border: #272d49;
+        --radius: 14px;
+        --safe-top: env(safe-area-inset-top, 0px);
+        --safe-bottom: env(safe-area-inset-bottom, 0px);
+      }
+
+      * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+      html, body {
+        margin: 0;
+        padding: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+        font-size: 17px;
+        line-height: 1.4;
+      }
+
+      .app { max-width: 720px; margin: 0 auto; }
+
+      /* ---------- Sticky header ---------- */
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        background: rgba(15, 18, 32, 0.92);
+        backdrop-filter: saturate(140%) blur(10px);
+        -webkit-backdrop-filter: saturate(140%) blur(10px);
+        border-bottom: 1px solid var(--border);
+        padding: calc(10px + var(--safe-top)) 14px 10px;
+      }
+
+      .title-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .title-row h1 {
+        font-size: 1.02rem;
+        font-weight: 700;
+        margin: 0;
+        letter-spacing: 0.2px;
+      }
+      .title-row .sub { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+
+      .toggle {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+        background: var(--bg-soft);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 5px;
+      }
+      .toggle button {
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-family: inherit;
+        font-size: 0.86rem;
+        font-weight: 600;
+        padding: 9px 6px;
+        border-radius: 9px;
+        cursor: pointer;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+      .toggle button[aria-pressed="true"] {
+        background: var(--accent);
+        color: #0b0e1c;
+        box-shadow: 0 2px 10px rgba(108, 140, 255, 0.35);
+      }
+
+      .hint {
+        padding: 10px 16px 4px;
+        font-size: 0.78rem;
+        color: var(--muted);
+      }
+
+      /* ---------- Sentence list ---------- */
+      ul.list { list-style: none; margin: 0; padding: 10px 10px calc(90px + var(--safe-bottom)); }
+
+      li.sentence {
+        display: flex;
+        align-items: stretch;
+        background: var(--row);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        margin-bottom: 10px;
+        overflow: hidden;
+        transition: border-color 0.15s ease, background 0.15s ease;
+      }
+      li.sentence.playing { border-color: var(--accent); background: var(--row-active); }
+
+      .main-btn {
+        flex: 1 1 auto;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: inherit;
+        font-family: inherit;
+        text-align: left;
+        padding: 14px 10px 14px 4px;
+        cursor: pointer;
+      }
+      .main-btn:active { background: var(--row-press); }
+
+      .cog-btn {
+        flex: 0 0 auto;
+        width: 46px;
+        appearance: none;
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-size: 1.15rem;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+      }
+      .cog-btn:active { background: var(--row-press); }
+      li.sentence.playing .cog-btn { color: var(--accent); }
+      li.sentence.edited .cog-btn { color: var(--accent-2); }
+      .cog-btn { position: relative; }
+      .cog-btn .tick {
+        position: absolute;
+        right: 5px;
+        bottom: 50%;
+        transform: translateY(14px);
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #3ecf8e;
+        color: #062b1a;
+        font-size: 0.6rem;
+        font-weight: 900;
+        line-height: 14px;
+        text-align: center;
+        pointer-events: none; /* taps go straight to the cog button */
+      }
+
+      /* ---------- Phrase editor (fullscreen) ---------- */
+      .editor {
+        position: fixed;
+        inset: 0;
+        z-index: 50;
+        background: var(--bg);
+        overflow-y: auto;
+        padding: calc(12px + var(--safe-top)) 16px calc(24px + var(--safe-bottom));
+      }
+      .editor[hidden] { display: none; }
+      .editor-inner { max-width: 720px; margin: 0 auto; }
+      .editor-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+      .editor-top h2 { margin: 0; font-size: 1rem; color: var(--muted); font-weight: 600; }
+      .icon-btn {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: var(--bg-soft);
+        color: var(--text);
+        border-radius: 10px;
+        font: inherit;
+        font-weight: 600;
+        padding: 8px 14px;
+        cursor: pointer;
+      }
+      .icon-btn:active { background: var(--row-press); }
+      .icon-btn.accent { background: var(--accent); color: #0b0e1c; border-color: var(--accent); }
+      .icon-btn.warm { background: var(--accent-2); color: #231400; border-color: var(--accent-2); }
+      .texts { background: var(--row); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; margin-bottom: 14px; }
+      .texts .lbl { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-top: 10px; }
+      .texts .lbl:first-child { margin-top: 0; }
+      .texts .val { font-size: 1.1rem; font-weight: 500; }
+      .texts .val.dev { font-family: "Noto Sans Devanagari", "Inter", sans-serif; font-size: 1.3rem; }
+      .play-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+      .seg { background: var(--row); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; margin-bottom: 10px; }
+      .seg-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-weight: 600; }
+      .adj { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(72px, 1.4fr) repeat(3, minmax(0, 1fr)); align-items: center; gap: 4px; margin-top: 6px; }
+      .adj button {
+        appearance: none;
+        height: 44px;
+        padding: 0;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--bg-soft);
+        color: var(--text);
+        font-size: 0.85rem;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      /* Inner (fine) steps are emphasised; outer (coarse) steps are dimmer. */
+      .adj button:nth-child(3), .adj button:nth-child(5) { font-size: 0.95rem; }
+      .adj button:nth-child(1), .adj button:nth-child(7) { color: var(--muted); }
+      .adj button:active { background: var(--row-press); }
+      .adj .time { text-align: center; font-variant-numeric: tabular-nums; }
+      .adj .time small { display: block; font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+      .adj .time span { font-size: 1.1rem; font-weight: 600; }
+      .adj .time span.changed { color: var(--accent-2); }
+
+      /* ---------- Export ---------- */
+      .export { text-align: left; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border); }
+      .export h3 { margin: 0 0 6px; font-size: 0.9rem; color: var(--text); }
+      .export .btns { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+      .export textarea {
+        width: 100%;
+        min-height: 160px;
+        background: var(--bg-soft);
+        color: var(--text);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        font: 0.72rem/1.4 ui-monospace, Consolas, monospace;
+        padding: 8px;
+      }
+      .export textarea[hidden] { display: none; }
+
+      .phrase {
+        min-width: 0;
+        font-size: 1.06rem;
+        font-weight: 500;
+        word-break: break-word;
+      }
+      .phrase.dev { font-family: "Noto Sans Devanagari", "Inter", sans-serif; font-size: 1.18rem; line-height: 1.5; }
+
+      .slow-btn {
+        flex: 0 0 auto;
+        width: 62px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        appearance: none;
+        border: 0;
+        border-left: 1px solid var(--border);
+        background: var(--bg-soft);
+        color: var(--accent-2);
+        font-family: inherit;
+        font-weight: 700;
+        cursor: pointer;
+      }
+      .slow-btn:active { background: var(--row-press); }
+      .slow-btn .lbl { font-size: 1.15rem; letter-spacing: 0.4px; font-weight: 700; }
+      li.sentence.playing-slow .slow-btn { background: var(--accent-2); color: #231400; }
+      li.sentence.playing-slow .slow-btn .lbl { color: #231400; }
+
+      /* ---------- Footer ---------- */
+      footer {
+        border-top: 1px solid var(--border);
+        padding: 18px 16px calc(24px + var(--safe-bottom));
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-align: center;
+      }
+      footer a { color: var(--accent); text-decoration: none; }
+      footer a:hover { text-decoration: underline; }
+
+      .audio-fallback { margin-top: 12px; }
+      .audio-fallback audio { width: 100%; max-width: 420px; }
+
+      @media (min-width: 540px) {
+        body { font-size: 18px; }
+        .title-row h1 { font-size: 1.15rem; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="app">
+      <header>
+        <div class="title-row">
+          <div>
+            <h1>🇳🇵 Nepali — 50 Everyday Sentences</h1>
+            <div class="sub">Tap a sentence to hear it spoken</div>
+          </div>
+        </div>
+        <div class="toggle" role="group" aria-label="Choose display language">
+          <button type="button" data-mode="en" aria-pressed="true">English</button>
+          <button type="button" data-mode="phon" aria-pressed="false">Phonetic</button>
+          <button type="button" data-mode="dev" aria-pressed="false">देवनागरी</button>
+        </div>
+      </header>
+
+      <p class="hint">Tap the main part of a row for normal speed · tap <strong>½×</strong> on the right for slow playback.</p>
+
+      <ul class="list" id="list"></ul>
+
+      <footer>
+        <div>Audio from the lesson “Nepali Basic 50 sentences you must know!!”.</div>
+        <div style="margin-top:6px">
+          Prefer video? Watch on
+          <a href="https://www.youtube.com/watch?v=KXey-lL-gJA&t=244s" target="_blank" rel="noopener">YouTube</a>.
+        </div>
+        <div class="audio-fallback">
+          <audio id="player" preload="metadata" controls src="audio.mp3"></audio>
+        </div>
+        <section class="export">
+          <h3>Export timings</h3>
+          <div>Fine-tune clips with each row's ⚙, then export the timings (<span id="edit-count">0</span> sentences edited).</div>
+          <div class="btns">
+            <button type="button" class="icon-btn accent" id="export-copy">Copy JSON</button>
+            <button type="button" class="icon-btn" id="export-download">Download JSON</button>
+            <button type="button" class="icon-btn" id="export-reset">Reset all edits</button>
+          </div>
+          <textarea id="export-text" readonly hidden></textarea>
+        </section>
+      </footer>
+    </div>
+
+    <div class="editor" id="editor" hidden role="dialog" aria-modal="true" aria-labelledby="editor-title">
+      <div class="editor-inner">
+        <div class="editor-top">
+          <h2 id="editor-title">Sentence</h2>
+          <button type="button" class="icon-btn" id="editor-close" aria-label="Close">✕ Close</button>
+        </div>
+        <div class="texts">
+          <div class="lbl">English</div><div class="val" id="ed-en"></div>
+          <div class="lbl">देवनागरी</div><div class="val dev" id="ed-dev"></div>
+          <div class="lbl">Phonetic</div><div class="val" id="ed-phon"></div>
+        </div>
+        <div class="play-row">
+          <button type="button" class="icon-btn accent" id="ed-play">▶ Play all</button>
+          <button type="button" class="icon-btn warm" id="ed-slow">▶ ½×</button>
+        </div>
+        <div id="ed-segs"></div>
+        <button type="button" class="icon-btn" id="ed-reset">Reset this sentence to defaults</button>
+      </div>
+    </div>
+
+    <script>
+      const DATA = [{"n":1,"dev":"तपाईंलाई कस्तो छ?","phon":"tapailai kasto cha","en":"How are you?","clips":[[54.35,57.31],[63.59,64.93]],"v":1},{"n":2,"dev":"मलाई सन्चै छ।","phon":"malai sanchai cha","en":"I'm fine.","clips":[[67.11,68.41],[68.44,70.4]],"v":1},{"n":3,"dev":"तपाईंलाई भेटेर खुशी लाग्यो।","phon":"tapailai bhetera khusi lagyo","en":"I'm very happy to meet you. (Nice to meet you.)","clips":[[76.12,78.46],[86.65,89.17]],"v":1},{"n":4,"dev":"यो साग मुठाको कति हो?","phon":"yo saag muthako kati ho","en":"How much is this bundle of spinach?","clips":[[97.92,100.08],[109.32,111.9]],"v":1},{"n":5,"dev":"यो त एकदम महँगो भयो, मिलाएर दिनुस् न।","phon":"yo ta ekdam mahango bhayo, milaera dinus na","en":"This is very expensive; please give it to me at a fair price.","clips":[[124.01,127.72],[128.08,131.42]]},{"n":6,"dev":"मलाई एक करेट अण्डा दिनुस् न।","phon":"malai ek karet anda dinus na","en":"Please give me one carat (30) of eggs.","clips":[[140.03,142.71],[175.55,178.81]],"v":1},{"n":7,"dev":"मलाई आधा करेट अण्डा दिनुस् न।","phon":"malai aadha karet anda dinus na","en":"Please give me half a carat (15) of eggs.","clips":[[157.6,160.9]],"v":1},{"n":8,"dev":"मलाई माफ गर्नुस्।","phon":"malai maaf garnus","en":"Please forgive me.","clips":[[182.8,184.8],[184.8,187.0]]},{"n":9,"dev":"म तपाईंलाई एकदमै माया गर्छु।","phon":"ma tapailai ekdamai maya garchu","en":"I love you very much.","clips":[[202.17,207.47],[226.37,229.19]],"v":1},{"n":10,"dev":"म तपाईं बिना बस्न सक्दिन।","phon":"ma tapai bina basna sakdina","en":"I can't live without you.","clips":[[237.77,243.53],[248.81,251.37]],"v":1},{"n":11,"dev":"उहाँलाई यो लुगा सुहाउँछ।","phon":"uhalai yo luga suhauncha","en":"This dress really suits him.","clips":[[256.9,264.2],[256.9,264.2]],"v":1},{"n":12,"dev":"तपाईंलाई यो लुगा सुहाएन।","phon":"tapailai yo luga suhaena","en":"This dress does not suit you.","clips":[[271.51,274.75],[274.71,277.59]],"v":1},{"n":13,"dev":"नेपाली संस्कृति एकदमै राम्रो रहेछ।","phon":"nepali sanskriti ekdamai ramro rahechha","en":"Nepali culture is very good (I discovered it is very beautiful).","clips":[[285.55,289.53],[289.57,292.91]],"v":1},{"n":14,"dev":"मलाई पैसा साटी दिनुस् न।","phon":"malai paisa saati dinus na","en":"Please give me change for the money.","clips":[[310.43,312.63],[312.49,315.27]],"v":1},{"n":15,"dev":"उहाँ खुशी भएको देखेर मलाई पनि एकदमै खुशी लाग्यो।","phon":"uha khusi bhaeko dekhera malai pani ekdamai khusi lagyo","en":"I feel very happy to see him happy.","clips":[[324.58,328.68],[328.69,332.93]],"v":1},{"n":16,"dev":"आशा छ हामी फेरि भेट्नेछौं।","phon":"asha cha hami pheri bhetnechhaun","en":"I hope we meet again.","clips":[[339.31,341.43],[341.97,344.51]]},{"n":17,"dev":"अर्को पटक भेट्दा मलाई नबिर्सिनु है।","phon":"arko patak bhetda malai nabirsinu hai","en":"Don't forget me when we meet next time.","clips":[[356.75,359.17],[360.11,363.17]]},{"n":18,"dev":"तपाईंले भनेको मैले बुझिनँ, एक पटक फेरि भन्नुस् न।","phon":"tapaile bhaneko maile bujhina, ek patak pheri bhannus na","en":"I don't understand what you said; please say it again.","clips":[[372.4,376.91],[377.97,382.37]]},{"n":19,"dev":"आजको मौसम एकदम रमाइलो छ।","phon":"aajako mausam ekdam ramailo cha","en":"Today's weather is very pleasant.","clips":[[388.75,391.15],[393.39,395.81]]},{"n":20,"dev":"अब खाना खाऊ।","phon":"aba khana khau","en":"Let's eat food.","clips":[[404.15,405.41],[406.16,407.82]]},{"n":21,"dev":"अब घर जाऊ।","phon":"aba ghar jau","en":"Let's go home.","clips":[[411.9,413.0],[414.0,415.9]]},{"n":22,"dev":"हिम्मत नहार्नुस्, सबै ठीक हुन्छ।","phon":"himmat naharnus, sabai thik huncha","en":"Don't be discouraged; everything will be fine.","clips":[[420.72,423.48],[424.24,427.22]]},{"n":23,"dev":"मलाई नेपाली मान्छेहरू एकदमै मिलनसार लाग्यो।","phon":"malai nepali manchheharu ekdamai milansaar lagyo","en":"I find Nepalese people very friendly.","clips":[[434.1,437.6],[438.1,441.8]]},{"n":24,"dev":"नेपाल सुन्दर र शान्त देश हो।","phon":"nepal sundar ra shanta desh ho","en":"Nepal is a beautiful and peaceful country.","clips":[[449.91,453.34],[453.59,456.76]]},{"n":25,"dev":"यहाँको हावापानी एकदम राम्रो छ।","phon":"yahako hawapani ekdam ramro cha","en":"The climate here is very good.","clips":[[469.36,472.06],[472.15,474.35]]},{"n":26,"dev":"मलाई स्वस्थ जीवन जिउन मन पर्छ।","phon":"malai swastha jivan jiuna man parcha","en":"I like to live a healthy life.","clips":[[479.28,482.23],[482.58,485.28]]},{"n":27,"dev":"म हरेक दिन बिहान एक घण्टा हिँड्छु।","phon":"ma harek din bihana ek ghanta hidchhu","en":"I walk for an hour every morning.","clips":[[499.73,502.77],[503.22,506.48]]},{"n":28,"dev":"धेरै हिँडेर मलाई एकदम थकाइ लाग्यो।","phon":"dherai hidera malai ekdam thakai lagyo","en":"I got very tired after walking a lot.","clips":[[512.08,514.78],[515.41,518.11]]},{"n":29,"dev":"मलाई मद्दत गर्नु भएकोमा तपाईंलाई धेरै धन्यवाद।","phon":"malai maddat garnu bhaekoma tapailai dherai dhanyabad","en":"Thank you so much for helping me.","clips":[[523.51,527.55],[527.99,531.65]]},{"n":30,"dev":"मैले तपाईंको गुण कहिले पनि बिर्सने छैन।","phon":"maile tapaiko gun kahile pani birsane chhaina","en":"I will never forget your kindness.","clips":[[536.82,539.82],[540.56,544.88]]},{"n":31,"dev":"मलाई यो फिल्म हेरेर एकदम डर लाग्यो।","phon":"malai yo film herera ekdam dar lagyo","en":"I got very scared after watching this movie.","clips":[[553.43,556.23],[556.63,559.49]]},{"n":32,"dev":"तपाईंले मलाई नेपाली भाषा सिकाउनु भएकोमा धेरै धन्यवाद।","phon":"tapaile malai nepali bhasha sikaunu bhaekoma dherai dhanyabad","en":"Thank you very much for teaching me Nepali.","clips":[[566.51,570.59],[571.03,575.25]]},{"n":33,"dev":"यो गीत सुनेर मलाई एकदम आनन्द लाग्यो।","phon":"yo git sunera malai ekdam ananda lagyo","en":"I really enjoyed listening to this song.","clips":[[581.33,584.59],[584.95,588.43]]},{"n":34,"dev":"ओहो, यो ठाउँ त कस्तो सुन्दर रहेछ!","phon":"oho, yo thau ta kasto sundar rahechha","en":"Wow, what a beautiful place this is!","clips":[[597.39,600.39],[600.88,603.6]]},{"n":35,"dev":"उहाँको बोली एकदम मीठो छ।","phon":"uhako boli ekdam mitho cha","en":"His voice is very sweet.","clips":[[629.2,631.5],[631.8,634.3]]},{"n":36,"dev":"हामीले नेपालको नियम पालना गर्नु पर्छ।","phon":"hamile nepalko niyam palana garnu parcha","en":"We have to follow the rules of Nepal.","clips":[[642.74,645.82],[661.19,664.09]]},{"n":37,"dev":"छोराछोरीले आमाबुवाले भनेको मान्नु पर्छ।","phon":"chhorachhorile aamabuwale bhaneko mannu parcha","en":"Children must obey their parents.","clips":[[670.42,673.76],[674.1,677.97]]},{"n":38,"dev":"हामी हरेक दिन बिहान सबेरै उठ्नु पर्छ।","phon":"hami harek din bihana saberai uthnu parcha","en":"We should get up early in the morning every day.","clips":[[684.69,688.21],[688.63,692.43]]},{"n":39,"dev":"हामीले झगडा गर्नु हुँदैन।","phon":"hamile jhagada garnu hudaina","en":"We should not fight.","clips":[[698.93,701.31],[701.33,703.83]]},{"n":40,"dev":"नेपाली भाषाको शब्द याद गर्न गाह्रो छ, तर बोल्न सजिलो छ।","phon":"nepali bhashako sabda yaad garna garo cha, tara bolna sajilo cha","en":"Nepali words are difficult to remember but easy to speak.","clips":[[708.43,712.97],[713.68,718.54]]},{"n":41,"dev":"मलाई अहिले जोरो आएको निको भयो।","phon":"malai ahile joro aaeko niko bhayo","en":"Now I have recovered from the fever.","clips":[[727.28,729.64],[730.13,732.67]]},{"n":42,"dev":"के तपाईंलाई मेरो कुरा नराम्रो लाग्यो?","phon":"ke tapailai mero kura naramro lagyo","en":"Do you mind my words?","clips":[[738.83,741.25],[741.87,744.67]]},{"n":43,"dev":"तपाईं मसँग रिसाउनु भएको छैन नि?","phon":"tapai masanga risaunu bhaeko chhaina ni","en":"You aren't angry with me, right?","clips":[[751.19,753.81],[754.48,757.38]]},{"n":44,"dev":"तपाईंले नेपाली भाषा सिक्दा सकेसम्म नेपाली भाषामा बोल्न प्रयास गर्नुस्।","phon":"tapaile nepali bhasha sikda sakesamma nepali bhasha ma bolna prayas garnus","en":"When learning Nepali, try to speak in Nepali as much as possible.","clips":[[763.28,768.56],[768.98,774.66]]},{"n":45,"dev":"तपाईं तुरुन्तै आइहाल्नुस् न।","phon":"tapai turuntai aaihalnus na","en":"Please come immediately.","clips":[[785.65,788.13],[800.79,802.99]]},{"n":46,"dev":"सकेसम्म छिटो फर्कनुस् है।","phon":"sakesamma chhito pharkanus hai","en":"Return as soon as possible.","clips":[[808.21,810.17],[810.93,812.85]]},{"n":47,"dev":"मलाई विश्वास गर्नुस्।","phon":"malai bishwas garnus","en":"Please believe me.","clips":[[818.29,820.09],[820.47,822.21]]},{"n":48,"dev":"मलाई तपाईंले भनेको कुरामा विश्वास लागेन।","phon":"malai tapaile bhaneko kurama bishwas lagena","en":"I don't believe what you said.","clips":[[826.87,830.01],[830.45,834.07]]},{"n":49,"dev":"मलाई तपाईं माथि भरोसा छ।","phon":"malai tapai mathi bharosa cha","en":"I trust you.","clips":[[839.41,841.23],[842.16,844.64]]},{"n":50,"dev":"सौचालयहरू कहाँ छन्?","phon":"sauchalayaharu kaha chhan","en":"Where are the restrooms?","clips":[[850.67,852.71],[853.43,855.53]]},{"n":51,"dev":"ट्वालेट कहाँ छ?","phon":"twalet kaha cha","en":"Where is the toilet?","clips":[[868.47,870.05],[870.35,871.39]]}];
+
+      const STORAGE_KEY = "nepali-display-mode";
+      // Per-sentence clip edits: { [n]: [[start, end], ...] }, overriding DATA defaults.
+      const EDITS_KEY = "nepali-clip-edits";
+      let edits = {};
+      try { edits = JSON.parse(localStorage.getItem(EDITS_KEY)) || {}; } catch (_) {}
+      const byN = Object.fromEntries(DATA.map((d) => [d.n, d]));
+      // Drop saved edits that now match the baked-in defaults (e.g. after calibration was imported).
+      for (const n of Object.keys(edits)) {
+        if (!byN[n] || JSON.stringify(edits[n]) === JSON.stringify(byN[n].clips)) delete edits[n];
+      }
+      localStorage.setItem(EDITS_KEY, JSON.stringify(edits));
+      const clipsFor = (n) => edits[n] || byN[n].clips;
+      function saveEdits() { localStorage.setItem(EDITS_KEY, JSON.stringify(edits)); updateEditCount(); }
+      const player = document.getElementById("player");
+      const listEl = document.getElementById("list");
+
+      let mode = localStorage.getItem(STORAGE_KEY) || "en";
+      if (!["en", "phon", "dev"].includes(mode)) mode = "en";
+
+      // ---------- Playback control ----------
+      const GAP_MS = 500;         // pause between repeated readings
+      let queue = [];             // remaining [start, end] clips
+      let stopAt = null;          // media time (seconds) at which current clip ends
+      let activeLi = null;        // currently-highlighted row
+      let activeSlow = false;
+      let gapTimer = null;
+      let rafId = null;
+
+      function clearActive() {
+        if (activeLi) {
+          activeLi.classList.remove("playing", "playing-slow");
+          activeLi = null;
+        }
+        activeSlow = false;
+      }
+
+      function stopAll() {
+        player.pause();
+        queue = [];
+        stopAt = null;
+        clearTimeout(gapTimer);
+        cancelAnimationFrame(rafId);
+        clearActive();
+      }
+
+      // rAF polling gives frame-accurate stops; timeupdate only fires ~4x/sec.
+      function watch() {
+        if (stopAt != null && player.currentTime >= stopAt) {
+          player.pause();
+          stopAt = null;
+          if (queue.length) {
+            gapTimer = setTimeout(playNextClip, GAP_MS / player.playbackRate);
+          } else {
+            clearActive();
+          }
+          return;
+        }
+        rafId = requestAnimationFrame(watch);
+      }
+
+      function playNextClip() {
+        const [s, e] = queue.shift();
+        stopAt = e;
+        try { player.currentTime = Math.max(0, s); } catch (_) {}
+        player.playbackRate = activeSlow ? 0.5 : 1;
+        const p = player.play();
+        if (p && p.catch) p.catch(() => {});
+        cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(watch);
+      }
+
+      // `el` is whatever element should be highlighted while playing (row or editor button).
+      function playClips(clips, el, slow) {
+        const isActive = activeLi === el && slow === activeSlow;
+        stopAll();
+        if (isActive) return; // tapping the same action again stops playback
+
+        activeLi = el;
+        activeSlow = slow;
+        el.classList.add("playing");
+        if (slow) el.classList.add("playing-slow");
+        queue = clips.map((c) => c.slice());
+
+        if (player.readyState >= 1) {
+          playNextClip();
+        } else {
+          player.addEventListener("loadedmetadata", playNextClip, { once: true });
+          player.load();
+        }
+      }
+
+      player.addEventListener("ended", stopAll);
+
+      // ---------- Rendering ----------
+      function textFor(item) { return item[mode]; }
+
+      function render() {
+        const frag = document.createDocumentFragment();
+        DATA.forEach((item) => {
+          const li = document.createElement("li");
+          li.className = "sentence" + (edits[item.n] ? " edited" : "");
+          li.dataset.n = item.n;
+
+          const cogBtn = document.createElement("button");
+          cogBtn.type = "button";
+          cogBtn.className = "cog-btn";
+          cogBtn.textContent = "⚙";
+          cogBtn.setAttribute("aria-label", "Edit timings for sentence " + item.n + (item.v ? " (verified)" : ""));
+          if (item.v) {
+            const tick = document.createElement("span");
+            tick.className = "tick";
+            tick.textContent = "✓";
+            cogBtn.appendChild(tick);
+          }
+
+          const mainBtn = document.createElement("button");
+          mainBtn.type = "button";
+          mainBtn.className = "main-btn";
+          mainBtn.setAttribute("aria-label", "Play sentence " + item.n + " at normal speed");
+
+          const phrase = document.createElement("span");
+          phrase.className = "phrase" + (mode === "dev" ? " dev" : "");
+          phrase.textContent = textFor(item);
+
+          mainBtn.appendChild(phrase);
+
+          const slowBtn = document.createElement("button");
+          slowBtn.type = "button";
+          slowBtn.className = "slow-btn";
+          slowBtn.setAttribute("aria-label", "Play sentence " + item.n + " slowly");
+          slowBtn.innerHTML = '<span class="lbl">&frac12;&times;</span>';
+
+          cogBtn.addEventListener("click", () => openEditor(item.n));
+          mainBtn.addEventListener("click", () => playClips(clipsFor(item.n), li, false));
+          slowBtn.addEventListener("click", () => playClips(clipsFor(item.n), li, true));
+
+          li.appendChild(cogBtn);
+          li.appendChild(mainBtn);
+          li.appendChild(slowBtn);
+          frag.appendChild(li);
+        });
+        listEl.innerHTML = "";
+        listEl.appendChild(frag);
+        // Re-apply highlight if something is playing after a re-render.
+        if (activeLi) {
+          const n = activeLi.dataset.n;
+          const match = listEl.querySelector('li.sentence[data-n="' + n + '"]');
+          if (match) {
+            activeLi = match;
+            match.classList.add("playing");
+            if (activeSlow) match.classList.add("playing-slow");
+          }
+        }
+      }
+
+      // ---------- Language toggle ----------
+      const toggleButtons = Array.from(document.querySelectorAll(".toggle button"));
+      function syncToggle() {
+        toggleButtons.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.mode === mode)));
+      }
+      toggleButtons.forEach((b) => {
+        b.addEventListener("click", () => {
+          if (mode === b.dataset.mode) return;
+          mode = b.dataset.mode;
+          localStorage.setItem(STORAGE_KEY, mode);
+          syncToggle();
+          render();
+        });
+      });
+
+      // ---------- Phrase editor ----------
+      const editor = document.getElementById("editor");
+      const segsEl = document.getElementById("ed-segs");
+      let editN = null;
+
+      const fmt = (t) => t.toFixed(2) + "s";
+
+      function openEditor(n) {
+        stopAll();
+        editN = n;
+        const item = byN[n];
+        document.getElementById("editor-title").textContent = "Sentence " + n;
+        document.getElementById("ed-en").textContent = item.en;
+        document.getElementById("ed-dev").textContent = item.dev;
+        document.getElementById("ed-phon").textContent = item.phon;
+        renderSegs();
+        editor.hidden = false;
+        document.body.style.overflow = "hidden";
+      }
+
+      function closeEditor() {
+        stopAll();
+        editor.hidden = true;
+        document.body.style.overflow = "";
+        editN = null;
+        render();
+      }
+
+      function adjust(ci, which, delta) {
+        const clips = clipsFor(editN).map((c) => c.slice());
+        const c = clips[ci];
+        c[which] = Math.max(0, Math.round((c[which] + delta) * 100) / 100);
+        if (c[0] > c[1] - 0.1) return; // keep at least 0.1s of audio
+        const same = JSON.stringify(clips) === JSON.stringify(byN[editN].clips);
+        if (same) delete edits[editN]; else edits[editN] = clips;
+        saveEdits();
+        renderSegs();
+      }
+
+      function renderSegs() {
+        const clips = clipsFor(editN);
+        const defaults = byN[editN].clips;
+        segsEl.innerHTML = "";
+        clips.forEach((c, ci) => {
+          const seg = document.createElement("div");
+          seg.className = "seg";
+          const head = document.createElement("div");
+          head.className = "seg-head";
+          head.innerHTML = "<span>Segment " + (ci + 1) + " · " + (c[1] - c[0]).toFixed(2) + "s</span>";
+          const playBtn = document.createElement("button");
+          playBtn.type = "button";
+          playBtn.className = "icon-btn";
+          playBtn.textContent = "▶ Play";
+          playBtn.addEventListener("click", () => playClips([clipsFor(editN)[ci]], playBtn, false));
+          head.appendChild(playBtn);
+          seg.appendChild(head);
+
+          [["Start", 0], ["End", 1]].forEach(([label, which]) => {
+            const row = document.createElement("div");
+            row.className = "adj";
+            const mk = (delta) => {
+              const b = document.createElement("button");
+              b.type = "button";
+              b.textContent = (delta < 0 ? "−" : "+") + String(Math.abs(delta)).replace(/^0/, "");
+              b.setAttribute("aria-label", label + (delta < 0 ? " minus " : " plus ") + Math.abs(delta) + " seconds");
+              b.addEventListener("click", () => adjust(ci, which, delta));
+              return b;
+            };
+            const time = document.createElement("div");
+            time.className = "time";
+            const changed = defaults[ci] && defaults[ci][which] !== c[which];
+            time.innerHTML = "<small>" + label + "</small><span" + (changed ? ' class="changed"' : "") + ">" + fmt(c[which]) + "</span>";
+            row.append(mk(-1), mk(-0.5), mk(-0.1), time, mk(0.1), mk(0.5), mk(1));
+            seg.appendChild(row);
+          });
+          segsEl.appendChild(seg);
+        });
+      }
+
+      document.getElementById("editor-close").addEventListener("click", closeEditor);
+      document.addEventListener("keydown", (e) => { if (e.key === "Escape" && !editor.hidden) closeEditor(); });
+      document.getElementById("ed-play").addEventListener("click", (e) => playClips(clipsFor(editN), e.currentTarget, false));
+      document.getElementById("ed-slow").addEventListener("click", (e) => playClips(clipsFor(editN), e.currentTarget, true));
+      document.getElementById("ed-reset").addEventListener("click", () => {
+        delete edits[editN];
+        saveEdits();
+        renderSegs();
+      });
+
+      // ---------- Export ----------
+      function exportJSON() {
+        const out = {
+          note: "Nepali 50 sentences clip timings (seconds into audio.mp3). 'verified' = already confirmed defaults; 'edited' = changed in this calibration pass.",
+          sentences: DATA.map((d) => ({ n: d.n, dev: d.dev, verified: !!d.v, edited: !!edits[d.n], clips: clipsFor(d.n) })),
+        };
+        return JSON.stringify(out, null, 1);
+      }
+      function updateEditCount() {
+        document.getElementById("edit-count").textContent = Object.keys(edits).length;
+      }
+      const exportText = document.getElementById("export-text");
+      document.getElementById("export-copy").addEventListener("click", async (e) => {
+        const btn = e.currentTarget;
+        const json = exportJSON();
+        exportText.value = json;
+        exportText.hidden = false;
+        try {
+          await navigator.clipboard.writeText(json);
+          btn.textContent = "Copied ✓";
+          setTimeout(() => { btn.textContent = "Copy JSON"; }, 1500);
+        } catch (_) {
+          exportText.select();
+        }
+      });
+      document.getElementById("export-download").addEventListener("click", () => {
+        const blob = new Blob([exportJSON()], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "nepali-clip-timings.json";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      });
+      document.getElementById("export-reset").addEventListener("click", () => {
+        if (!confirm("Discard all manual timing edits?")) return;
+        edits = {};
+        saveEdits();
+        render();
+      });
+
+      updateEditCount();
+      syncToggle();
+      render();
+    </script>
+  </body>
+</html>
